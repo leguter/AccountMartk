@@ -1,0 +1,314 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-bottom: 90px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Header */
+.header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--white);
+  margin: 0;
+}
+
+/* User Card */
+.userCard {
+  margin: 16px;
+  background: linear-gradient(135deg, var(--black-2), var(--black-3));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.userCard::after {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(245,197,24,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.userCardInner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+}
+
+.userInfo { flex: 1; min-width: 0; }
+
+.userName {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+
+.userHandle {
+  font-size: 13px;
+  color: var(--gray-3);
+  margin-bottom: 4px;
+}
+
+.userTgId {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--gray-3);
+}
+
+.premiumBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--yellow-muted);
+  color: var(--yellow);
+  border: 1px solid rgba(245,197,24,0.25);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+/* Stats */
+.statsRow {
+  display: flex;
+  align-items: center;
+  margin: 0 16px 4px;
+  background: var(--black-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-lg);
+  padding: 16px 0;
+}
+
+.statBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statBoxValue {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.statBoxLabel {
+  font-size: 10px;
+  color: var(--gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.statBoxDivider {
+  width: 1px;
+  height: 32px;
+  background: var(--black-4);
+}
+
+/* Section */
+.section {
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.sectionCount {
+  background: var(--black-4);
+  color: var(--gray-3);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+/* History List */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--black-4);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--black-2);
+  transition: background var(--transition-fast);
+}
+.historyItem:hover { background: var(--black-3); }
+
+.historyIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--black-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.historyInfo { flex: 1; min-width: 0; }
+
+.historyTitle {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyDate {
+  font-size: 12px;
+  color: var(--gray-3);
+}
+
+.historyRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+}
+
+.status--completed {
+  background: rgba(34,197,94,0.15);
+  color: var(--success);
+}
+
+.status--pending {
+  background: rgba(245,158,11,0.15);
+  color: var(--warning);
+}
+
+.status--error {
+  background: rgba(239,68,68,0.15);
+  color: var(--error);
+}
+
+/* Settings */
+.settingsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--black-4);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--black-2);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.settingItem:hover { background: var(--black-3); }
+.settingItem:active { background: var(--black-4); }
+
+.settingIcon { font-size: 18px; width: 24px; text-align: center; }
+
+.settingLabel {
+  flex: 1;
+  font-size: 14px;
+  color: var(--white);
+  font-weight: 500;
+}
+
+.settingRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-3);
+}
+
+.settingValue {
+  font-size: 12px;
+  color: var(--gray-3);
+  font-weight: 500;
+}
+
+/* App Info */
+.appInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px;
+}
+
+.appLogo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-3);
+}
+
+.appVersion {
+  font-size: 12px;
+  color: var(--gray-2);
+}

@@ -1,0 +1,187 @@
+import { useUserStore, usePaymentStore } from '../store';
+import { usePurchaseHistory } from '../hooks';
+import { Avatar, StarsPrice, Skeleton, EmptyState, Button } from '../components/ui';
+import styles from './Profile.module.css';
+
+const STAT_ITEMS = [
+  { label: 'Purchases', key: 'purchases' },
+  { label: 'Stars Spent', key: 'spent' },
+  { label: 'Member Since', key: 'since' },
+];
+
+export default function Profile() {
+  const user = useUserStore((s) => s.user);
+  const purchaseHistory = usePaymentStore((s) => s.purchaseHistory);
+
+  // Combine local + fetched history
+  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory(user?.id);
+  const allHistory = [...purchaseHistory, ...(fetchedHistory?.data || [])];
+
+  // Deduplicate
+  const seen = new Set();
+  const uniqueHistory = allHistory.filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  const totalSpent = uniqueHistory.reduce((acc, p) => acc + (p.price || 0), 0);
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+    });
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'completed') return styles['status--completed'];
+    if (status === 'pending') return styles['status--pending'];
+    return styles['status--error'];
+  };
+
+  return (
+    <div className={styles.page}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1 className={styles.pageTitle}>Profile</h1>
+      </div>
+
+      {/* User card */}
+      <div className={styles.userCard}>
+        <div className={styles.userCardInner}>
+          <Avatar
+            src={user?.photo_url}
+            name={[user?.first_name, user?.last_name].filter(Boolean).join(' ')}
+            size={64}
+          />
+          <div className={styles.userInfo}>
+            <div className={styles.userName}>
+              {user?.first_name} {user?.last_name}
+            </div>
+            {user?.username && (
+              <div className={styles.userHandle}>@{user.username}</div>
+            )}
+            <div className={styles.userTgId}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.5 }}>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+              </svg>
+              ID: {user?.id}
+            </div>
+          </div>
+          <div className={styles.premiumBadge}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            <span>Buyer</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className={styles.statsRow}>
+        <div className={styles.statBox}>
+          <span className={styles.statBoxValue}>{uniqueHistory.length}</span>
+          <span className={styles.statBoxLabel}>Purchases</span>
+        </div>
+        <div className={styles.statBoxDivider} />
+        <div className={styles.statBox}>
+          <StarsPrice amount={totalSpent} size="md" />
+          <span className={styles.statBoxLabel}>Stars Spent</span>
+        </div>
+        <div className={styles.statBoxDivider} />
+        <div className={styles.statBox}>
+          <span className={styles.statBoxValue}>2024</span>
+          <span className={styles.statBoxLabel}>Member Since</span>
+        </div>
+      </div>
+
+      {/* Purchase History */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Purchase History</h2>
+          {uniqueHistory.length > 0 && (
+            <span className={styles.sectionCount}>{uniqueHistory.length}</span>
+          )}
+        </div>
+
+        {historyLoading ? (
+          <div className={styles.historyList}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={styles.historyItem}>
+                <Skeleton width={40} height={40} radius="10px" />
+                <div style={{ flex: 1 }}>
+                  <Skeleton width="55%" height={15} />
+                  <Skeleton width="35%" height={12} style={{ marginTop: 6 }} />
+                </div>
+                <Skeleton width={60} height={20} />
+              </div>
+            ))}
+          </div>
+        ) : uniqueHistory.length === 0 ? (
+          <EmptyState
+            icon="🛒"
+            title="No purchases yet"
+            description="Browse the marketplace and find your first account"
+          />
+        ) : (
+          <div className={styles.historyList}>
+            {uniqueHistory.map((item) => (
+              <div key={item.id} className={styles.historyItem}>
+                <div className={styles.historyIcon}>
+                  {item.productTitle?.startsWith('@') ? '✈️' :
+                   item.productTitle?.startsWith('+') ? '📱' : '📦'}
+                </div>
+                <div className={styles.historyInfo}>
+                  <div className={styles.historyTitle}>{item.productTitle}</div>
+                  <div className={styles.historyDate}>{formatDate(item.date)}</div>
+                </div>
+                <div className={styles.historyRight}>
+                  <StarsPrice amount={item.price} size="sm" />
+                  <span className={[styles.statusBadge, getStatusColor(item.status)].join(' ')}>
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Settings / Actions */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Settings</h2>
+        <div className={styles.settingsList}>
+          {[
+            { icon: '🔔', label: 'Notifications', action: 'toggle' },
+            { icon: '🌐', label: 'Language', value: user?.language_code?.toUpperCase() || 'EN' },
+            { icon: '📋', label: 'Terms of Service', action: 'link' },
+            { icon: '🔒', label: 'Privacy Policy', action: 'link' },
+            { icon: '📞', label: 'Support', action: 'link' },
+          ].map((item) => (
+            <div key={item.label} className={styles.settingItem}>
+              <span className={styles.settingIcon}>{item.icon}</span>
+              <span className={styles.settingLabel}>{item.label}</span>
+              <span className={styles.settingRight}>
+                {item.value && <span className={styles.settingValue}>{item.value}</span>}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* App info */}
+      <div className={styles.appInfo}>
+        <div className={styles.appLogo}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--yellow)' }}>
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          <span>AccountMark</span>
+        </div>
+        <span className={styles.appVersion}>v1.0.0</span>
+      </div>
+    </div>
+  );
+}

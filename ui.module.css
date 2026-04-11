@@ -1,0 +1,233 @@
+/* ── BUTTON ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background var(--transition-fast);
+}
+
+.btn:active::after {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* Variants */
+.btn--primary {
+  background: var(--yellow);
+  color: var(--black);
+}
+.btn--primary:hover { background: var(--yellow-light); box-shadow: var(--shadow-yellow-sm); }
+
+.btn--secondary {
+  background: var(--black-4);
+  color: var(--white);
+  border: 1px solid var(--gray-1);
+}
+.btn--secondary:hover { background: var(--black-5); border-color: var(--gray-2); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--gray-4);
+  border: 1px solid var(--gray-1);
+}
+.btn--ghost:hover { color: var(--white); border-color: var(--gray-2); background: var(--black-3); }
+
+.btn--danger {
+  background: var(--error);
+  color: white;
+}
+.btn--danger:hover { filter: brightness(1.1); }
+
+.btn--yellow-outline {
+  background: var(--yellow-muted);
+  color: var(--yellow);
+  border: 1px solid rgba(245, 197, 24, 0.3);
+}
+.btn--yellow-outline:hover { background: rgba(245, 197, 24, 0.2); border-color: var(--yellow); }
+
+/* Sizes */
+.btn--sm { height: 34px; padding: 0 14px; font-size: 13px; }
+.btn--md { height: 44px; padding: 0 20px; font-size: 15px; }
+.btn--lg { height: 52px; padding: 0 28px; font-size: 16px; }
+.btn--xl { height: 58px; padding: 0 32px; font-size: 17px; border-radius: var(--radius-lg); }
+
+.btn--full { width: 100%; }
+
+.btn--loading, .btn--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnIcon { display: flex; align-items: center; }
+.btnIconRight { display: flex; align-items: center; margin-left: auto; }
+
+/* ── SPINNER ─────────────────────────────────────────────────── */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── BADGE ───────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  background: var(--yellow);
+  color: var(--black);
+}
+
+.badge--sm { font-size: 9px; padding: 2px 6px; }
+.badge--md { font-size: 11px; padding: 3px 8px; }
+.badge--lg { font-size: 13px; padding: 4px 10px; }
+
+/* ── SKELETON ─────────────────────────────────────────────────── */
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--black-3) 0%,
+    var(--black-4) 40%,
+    var(--black-3) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── STARS PRICE ─────────────────────────────────────────────── */
+.starsPrice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.starsPrice--sm { font-size: 13px; }
+.starsPrice--md { font-size: 16px; }
+.starsPrice--lg { font-size: 22px; }
+.starsPrice--xl { font-size: 28px; }
+
+.starsPrice--strike {
+  color: var(--gray-3);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+.starsPrice--strike svg { opacity: 0.5; }
+
+/* ── DIVIDER ──────────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--black-4);
+}
+.dividerLabel {
+  font-size: 11px;
+  color: var(--gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── ICON BUTTON ─────────────────────────────────────────────── */
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--black-3);
+  color: var(--gray-4);
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+.iconBtn:hover { background: var(--black-4); color: var(--white); }
+.iconBtn:active { transform: scale(0.93); }
+.iconBtn--active { background: var(--yellow-muted); color: var(--yellow); border-color: rgba(245,197,24,0.25); }
+
+/* ── AVATAR ──────────────────────────────────────────────────── */
+.avatar {
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--yellow-dark), var(--yellow-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--black);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.avatarImg { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── EMPTY STATE ────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 12px;
+}
+.emptyIcon { font-size: 48px; margin-bottom: 8px; }
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+}
+.emptyDesc { font-size: 14px; color: var(--gray-3); max-width: 240px; line-height: 1.5; }
+.emptyAction { margin-top: 8px; }
+
+/* ── ERROR STATE ─────────────────────────────────────────────── */
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  gap: 10px;
+  text-align: center;
+}
+.errorIcon { font-size: 36px; }
+.errorMsg { font-size: 14px; color: var(--gray-3); max-width: 240px; }
