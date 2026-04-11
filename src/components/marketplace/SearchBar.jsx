@@ -11,7 +11,7 @@ export default function SearchBar({ placeholder = 'Search accounts...' }) {
 
   useEffect(() => {
     setSearch(debouncedValue);
-  }, [debouncedValue]);
+  }, [debouncedValue, setSearch]);
 
   const handleSort = (e) => {
     selection();

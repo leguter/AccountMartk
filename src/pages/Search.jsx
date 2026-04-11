@@ -10,19 +10,19 @@ const TRENDING = ['@crypto', 'telegram channel', 'instagram 100k', 'youtube mone
 export default function Search() {
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
-  const { setSearch, filteredProducts, activeCategory, setCategory } = useMarketplaceStore();
+  const { setSearch, filteredProducts } = useMarketplaceStore();
   const { isLoading } = useProducts();
   const { selection } = useHaptic();
   const debouncedQuery = useDebounce(query, 280);
 
   useEffect(() => {
     setSearch(debouncedQuery);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, setSearch]);
 
   // Reset category on search page mount
   useEffect(() => {
     return () => setSearch('');
-  }, []);
+  }, [setSearch]);
 
   const handleTrending = (term) => {
     selection();

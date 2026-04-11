@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  USE_MOCK,
+  authService,
+  setApiAccessToken,
+  readPersistedUserSlice,
+  USER_PERSIST_KEY,
+} from '../services/api';
 
 // User store
 export const useUserStore = create(
@@ -7,6 +14,7 @@ export const useUserStore = create(
     (set, get) => ({
       user: null,
       initData: null,
+      accessToken: null,
       isAuthenticated: false,
       isLoading: true,
 
@@ -14,50 +22,120 @@ export const useUserStore = create(
       setInitData: (initData) => set({ initData }),
       setLoading: (isLoading) => set({ isLoading }),
 
-      logout: () => set({ user: null, isAuthenticated: false, initData: null }),
+      logout: () => {
+        setApiAccessToken(null);
+        set({
+          user: null,
+          isAuthenticated: false,
+          initData: null,
+          accessToken: null,
+        });
+      },
 
-      // Telegram WebApp init
-      initTelegram: () => {
+      initTelegram: async () => {
         const tg = window.Telegram?.WebApp;
         if (!tg) {
           console.warn('Telegram WebApp not available');
-          set({ isLoading: false });
+          if (!USE_MOCK) {
+            const { accessToken, user } = readPersistedUserSlice();
+            setApiAccessToken(accessToken);
+            set({
+              user,
+              accessToken,
+              isAuthenticated: !!accessToken,
+              isLoading: false,
+            });
+          } else {
+            setApiAccessToken(null);
+            set({ isLoading: false });
+          }
           return null;
         }
 
         tg.ready();
         tg.expand();
-
-        // Set theme
         tg.setHeaderColor('#0a0a0a');
         tg.setBackgroundColor('#0a0a0a');
 
         const initData = tg.initData;
-        const user = tg.initDataUnsafe?.user || null;
+        const unsafeUser = tg.initDataUnsafe?.user || null;
 
-        // Mock user for development
-        const resolvedUser = user || {
-          id: 123456789,
-          username: 'demo_user',
-          first_name: 'Demo',
-          last_name: 'User',
-          photo_url: null,
-          language_code: 'en',
-        };
+        if (USE_MOCK) {
+          const resolvedUser = unsafeUser || {
+            id: 123456789,
+            username: 'demo_user',
+            first_name: 'Demo',
+            last_name: 'User',
+            photo_url: null,
+            language_code: 'en',
+          };
+          setApiAccessToken(null);
+          set({
+            user: resolvedUser,
+            initData: initData || 'mock_init_data',
+            accessToken: null,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          return tg;
+        }
 
+        if (initData) {
+          try {
+            const res = await authService.loginWithTelegram(initData);
+            const u = res.user;
+            setApiAccessToken(res.token);
+            set({
+              user: {
+                id: u.id,
+                username: u.username ?? null,
+                first_name: u.firstName,
+                last_name: '',
+                photo_url: null,
+                language_code: 'en',
+              },
+              initData,
+              accessToken: res.token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (e) {
+            console.warn('Telegram auth failed:', e);
+            setApiAccessToken(null);
+            set({
+              user: null,
+              initData,
+              accessToken: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          }
+          return tg;
+        }
+
+        const { accessToken, user } = readPersistedUserSlice();
+        setApiAccessToken(accessToken);
         set({
-          user: resolvedUser,
-          initData: initData || 'mock_init_data',
-          isAuthenticated: true,
+          user,
+          accessToken,
+          initData: null,
+          isAuthenticated: !!accessToken,
           isLoading: false,
         });
-
         return tg;
       },
     }),
     {
-      name: 'accountmark-user',
-      partialize: (state) => ({ user: state.user }),
+      name: USER_PERSIST_KEY,
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.accessToken) {
+          setApiAccessToken(state.accessToken);
+        }
+      },
     }
   )
 );
@@ -114,7 +192,7 @@ export const useMarketplaceStore = create((set, get) => ({
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.description?.toLowerCase().includes(q) ||
-          p.username?.toLowerCase().includes(q)
+          (p.username && p.username.toLowerCase().includes(q))
       );
     }
 

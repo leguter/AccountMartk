@@ -66,11 +66,11 @@ export function Badge({ children, color, size = 'sm' }) {
 }
 
 // ─── SKELETON ────────────────────────────────────────────────────────────────
-export function Skeleton({ width, height, radius, className = '' }) {
+export function Skeleton({ width, height, radius, className = '', style: styleProp }) {
   return (
     <span
       className={[styles.skeleton, className].join(' ')}
-      style={{ width, height, borderRadius: radius }}
+      style={{ width, height, borderRadius: radius, ...styleProp }}
     />
   );
 }

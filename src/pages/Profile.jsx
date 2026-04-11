@@ -1,13 +1,7 @@
 import { useUserStore, usePaymentStore } from '../store';
 import { usePurchaseHistory } from '../hooks';
-import { Avatar, StarsPrice, Skeleton, EmptyState, Button } from '../components/ui';
+import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
 import styles from './Profile.module.css';
-
-const STAT_ITEMS = [
-  { label: 'Purchases', key: 'purchases' },
-  { label: 'Stars Spent', key: 'spent' },
-  { label: 'Member Since', key: 'since' },
-];
 
 export default function Profile() {
   const user = useUserStore((s) => s.user);

@@ -6,13 +6,6 @@ import { EmptyState, ErrorState, StarsPrice } from '../components/ui';
 import { useUserStore } from '../store';
 import styles from './Marketplace.module.css';
 
-const SORT_OPTIONS = [
-  { value: 'popular', label: '🔥 Popular' },
-  { value: 'newest', label: '✨ Newest' },
-  { value: 'price_asc', label: '💰 Cheapest' },
-  { value: 'price_desc', label: '👑 Premium' },
-];
-
 export default function Marketplace() {
   const { products, isLoading, error } = useProducts();
   const user = useUserStore((s) => s.user);

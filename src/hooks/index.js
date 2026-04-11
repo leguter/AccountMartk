@@ -42,7 +42,7 @@ export function useProducts() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [setProducts, setLoading, setError]);
 
   return { products: filteredProducts, isLoading, error };
 }
