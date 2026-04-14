@@ -3,12 +3,12 @@ import { useMarketplaceStore } from '../../store';
 import { useHaptic } from '../../hooks';
 import styles from './CategoryTabs.module.css';
 const CATEGORIES = [
-  { id: 'all', label: 'All', icon: '🔥' },
+  // { id: 'all', label: 'All', icon: '🔥' },
   { id: 'telegram', label: 'Telegram', icon: '#telegram-communication-chat-interaction-network-connection-svgrepo-com' },
-  { id: 'instagram', label: 'Instagram', icon: '📸' },
+  // { id: 'instagram', label: 'Instagram', icon: '📸' },
   { id: 'youtube', label: 'YouTube', icon: '#youtube-color-svgrepo-com' },
   { id: 'tiktok', label: 'TikTok', icon: '#tiktok-svgrepo-com' },
-  { id: 'phone', label: 'Numbers', icon: '📱' },
+  // { id: 'phone', label: 'Numbers', icon: '📱' },
 ];
 
 export default function CategoryTabs() {
