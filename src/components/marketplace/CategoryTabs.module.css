@@ -7,7 +7,7 @@
   display: flex;
   gap: 8px;
   padding: 4px 16px 12px;
-  overflow-x: auto;
+  /* overflow-x: auto; */
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x mandatory;

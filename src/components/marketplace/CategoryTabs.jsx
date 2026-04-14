@@ -2,13 +2,12 @@ import { useRef } from 'react';
 import { useMarketplaceStore } from '../../store';
 import { useHaptic } from '../../hooks';
 import styles from './CategoryTabs.module.css';
-
 const CATEGORIES = [
   { id: 'all', label: 'All', icon: '🔥' },
-  { id: 'telegram', label: 'Telegram', icon: '✈️' },
+  { id: 'telegram', label: 'Telegram', icon: '#telegram-communication-chat-interaction-network-connection-svgrepo-com' },
   { id: 'instagram', label: 'Instagram', icon: '📸' },
-  { id: 'youtube', label: 'YouTube', icon: '▶️' },
-  { id: 'tiktok', label: 'TikTok', icon: '🎵' },
+  { id: 'youtube', label: 'YouTube', icon: '#youtube-color-svgrepo-com' },
+  { id: 'tiktok', label: 'TikTok', icon: '#tiktok-svgrepo-com' },
   { id: 'phone', label: 'Numbers', icon: '📱' },
 ];
 
@@ -33,7 +32,10 @@ export default function CategoryTabs() {
               className={[styles.tab, active ? styles['tab--active'] : ''].join(' ')}
               onClick={() => handleSelect(cat.id)}
             >
-              <span className={styles.icon}>{cat.icon}</span>
+              <svg className={styles.icon}>
+                <use xlink:href={cat.icon}></use>
+              </svg>
+              {/* <span className={styles.icon}>{cat.icon}</span> */}
               <span className={styles.label}>{cat.label}</span>
             </button>
           );
