@@ -4,10 +4,10 @@ import { useHaptic } from '../../hooks';
 import styles from './ProductCard.module.css';
 
 const CATEGORY_ICONS = {
-  telegram: '✈️',
+  telegram: '/icons-media.svg#telegram-communication-chat-interaction-network-connection-svgrepo-com',
   instagram: '📸',
-  youtube: '▶️',
-  tiktok: '🎵',
+  youtube: '/icons-media.svg#youtube-color-svgrepo-com',
+  tiktok: '/icons-media.svg#tiktok-svgrepo-com',
   phone: '📱',
 };
 
@@ -34,20 +34,22 @@ export function ProductCard({ product, index = 0 }) {
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Badge */}
-      {product.badge && (
+      {/* {product.badge && (
         <div className={styles.badgeWrap}>
           <Badge color={product.badgeColor} size="sm">
             {product.badge}
           </Badge>
         </div>
-      )}
+      )} */}
 
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.avatar}>
-          <span className={styles.avatarIcon}>
-            {CATEGORY_ICONS[product.category] || '📦'}
-          </span>
+         
+             <svg className={styles.avatarIcon}>
+                            <use href={CATEGORY_ICONS[product.category] || '📦'}></use>
+                          </svg>
+        
         </div>
         <div className={styles.meta}>
           <h3 className={styles.title}>{product.title}</h3>
