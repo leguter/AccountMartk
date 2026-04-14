@@ -1,6 +1,6 @@
-<!-- <svg width="0" height="0" class="hidden">
+<svg width="0" height="0" class="hidden">
   <symbol xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-label="TikTok" role="img" viewBox="0 0 512 512" id="tiktok-svgrepo-com">
-    <rect rx="15%" height="30" width="30" fill="#ffffff"></rect>
+    <rect rx="15%" height="512" width="512" fill="#ffffff"></rect>
     <defs>
       <path id="t" d="M219 200a117 117 0 1 0 101 115v-128a150 150 0 0 0 88 28v-63a88 88 0 0 1-88-88h-64v252a54 54 0 1 1-37-51z"></path>
     </defs>
@@ -25,46 +25,4 @@
       </g>
     </g>
   </symbol>
-</svg> -->
-<svg width="0" height="0" class="hidden" style="display: none;">
-  <symbol xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-label="TikTok" role="img" viewBox="0 0 512 512" id="tiktok-svgrepo-com">
-    <rect rx="15%" height="30" width="30" fill="#ffffff"></rect>
-    <defs>
-      <path id="t" d="M219 200a117 117 0 1 0 101 115v-128a150 150 0 0 0 88 28v-63a88 88 0 0 1-88-88h-64v252a54 54 0 1 1-37-51z"></path>
-    </defs>
-    <use href="#t" fill="#f05" x="18" y="15"></use>
-    <use href="#t" fill="#0ee"></use>
-  </symbol>
-  
-  <symbol version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -7 48 48" id="youtube-color-svgrepo-com">
-    <title>Youtube-color</title>
-    <desc>Created with Sketch.</desc>
-    <defs></defs>
-    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-      <g id="Color-" transform="translate(-200.000000, -368.000000)" fill="#CE1312">
-        <path d="M219.044,391.269916 L219.0425,377.687742 L232.0115,384.502244 L219.044,391.269916 Z M247.52,375.334163 C247.52,375.334163 247.0505,372.003199 245.612,370.536366 C243.7865,368.610299 241.7405,368.601235 240.803,368.489448 C234.086,368 224.0105,368 224.0105,368 L223.9895,368 C223.9895,368 213.914,368 207.197,368.489448 C206.258,368.601235 204.2135,368.610299 202.3865,370.536366 C200.948,372.003199 200.48,375.334163 200.48,375.334163 C200.48,375.334163 200,379.246723 200,383.157773 L200,386.82561 C200,390.73817 200.48,394.64922 200.48,394.64922 C200.48,394.64922 200.948,397.980184 202.3865,399.447016 C204.2135,401.373084 206.612,401.312658 207.68,401.513574 C211.52,401.885191 224,402 224,402 C224,402 234.086,401.984894 240.803,401.495446 C241.7405,401.382148 243.7865,401.373084 245.612,399.447016 C247.0505,397.980184 247.52,394.64922 247.52,394.64922 C247.52,394.64922 248,390.73817 248,386.82561 L248,383.157773 C248,379.246723 247.52,375.334163 247.52,375.334163 L247.52,375.334163 Z" id="Youtube"></path>
-      </g>
-    </g>
-  </symbol>
-
-  <symbol version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" id="telegram-communication-chat-interaction-network-connection-svgrepo-com">
-    <g id="Layer_1"></g>
-    <g id="Layer_2">
-      <g>
-        <path d="M88.723,12.142C76.419,17.238,23.661,39.091,9.084,45.047c-9.776,3.815-4.053,7.392-4.053,7.392    s8.345,2.861,15.499,5.007c7.153,2.146,10.968-0.238,10.968-0.238l33.62-22.652c11.922-8.107,9.061-1.431,6.199,1.431    c-6.199,6.2-16.452,15.975-25.036,23.844c-3.815,3.338-1.908,6.199-0.238,7.63c6.199,5.246,23.129,15.976,24.082,16.691    c5.037,3.566,14.945,8.699,16.452-2.146c0,0,5.961-37.435,5.961-37.435c1.908-12.637,3.815-24.321,4.053-27.659    C97.307,8.804,88.723,12.142,88.723,12.142z"></path>
-      </g>
-    </g>
-  </symbol>
-</svg>
-
-<svg width="32" height="32" class="icon-tiktok">
-  <use href="#tiktok-svgrepo-com"></use>
-</svg>
-
-<svg width="32" height="32" class="icon-youtube">
-  <use href="#youtube-color-svgrepo-com"></use>
-</svg>
-
-<svg width="32" height="32" class="icon-telegram">
-  <use href="#telegram-communication-chat-interaction-network-connection-svgrepo-com"></use>
 </svg>
