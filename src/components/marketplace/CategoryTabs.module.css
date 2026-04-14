@@ -1,4 +1,4 @@
-.wrapper {
+/* .wrapper {
   overflow: hidden;
   margin: 0 -16px;
 }
@@ -7,7 +7,6 @@
   display: flex;
   gap: 8px;
   padding: 4px 16px 12px;
-  /* overflow-x: auto; */
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x mandatory;
@@ -51,4 +50,71 @@
 
 .icon { font-size: 14px; line-height: 1; }
 
-.label { font-size: 13px; }
+.label { font-size: 13px; } */
+
+/* Контейнер, який обрізає контент і дозволяє скрол */
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px 0;
+  /* Приховуємо скролбар для естетики */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Трек, у якому лежать самі кнопки */
+.track {
+  display: flex;
+  gap: 12px; /* Відстань між кнопками */
+  padding: 0 16px; 
+  align-items: center;
+  width: max-content; /* ВАЖЛИВО: не дає кнопкам розтягуватися на всю ширину екрану */
+}
+
+/* Сама кнопка */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Відстань між іконкою та текстом */
+  padding: 10px 20px;
+  border-radius: 100px; /* Робить ідеальну форму таблетки */
+  background-color: #1c1c1e; /* Темний фон неактивних кнопок (підставте свій) */
+  color: #a0a0a0;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap; /* ВАЖЛИВО: текст ніколи не переноситься на новий рядок */
+  transition: all 0.2s ease;
+}
+
+/* Активна кнопка (жовта) */
+.tab--active {
+  background-color: #f7ca18; /* Ваш жовтий колір */
+  color: #000;
+}
+
+/* Універсальний клас для іконки (і для емодзі, і обгортка для SVG) */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 20px; /* Розмір для емодзі 🔥 */
+  flex-shrink: 0; /* ВАЖЛИВО: забороняє Flexbox сплющувати іконку, якщо мало місця */
+}
+
+/* Додаткове правило конкретно для SVG */
+svg.icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor; /* SVG перейме колір тексту (жовтий або сірий) */
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 600;
+}
