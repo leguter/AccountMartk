@@ -4,7 +4,7 @@ import { useMarketplaceStore, usePaymentStore, useUserStore } from '../store';
 import axios from 'axios';
 
 const _api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'http://localhost:4000',
+  baseURL: (import.meta.env.BASE_URL || '').replace(/\/$/, '') || 'https://account-martk.vercel.app/',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
