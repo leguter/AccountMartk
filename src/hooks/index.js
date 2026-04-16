@@ -57,7 +57,7 @@ export function useProduct(id) {
     if (!id) return;
 
     // Use cached if same product
-    if (selectedProduct?.id === id) return;
+    if (selectedProduct?.id == id) return;
 
     setIsLoading(true);
     productService
@@ -72,7 +72,7 @@ export function useProduct(id) {
       });
   }, [id]);
 
-  return { product: selectedProduct?.id === id ? selectedProduct : null, isLoading, error };
+  return { product: selectedProduct?.id == id ? selectedProduct : null, isLoading, error };
 }
 
 // Purchase history

@@ -312,3 +312,51 @@
   font-size: 12px;
   color: var(--gray-2);
 }
+
+/* ─── Seller Dashboard Card ───────────────────────────────────── */
+.sellerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px 8px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(245, 197, 24, 0.06), rgba(245, 197, 24, 0.02));
+  border: 1px solid rgba(245, 197, 24, 0.2);
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.sellerCard:hover {
+  background: linear-gradient(135deg, rgba(245, 197, 24, 0.1), rgba(245, 197, 24, 0.04));
+}
+
+.sellerCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sellerCardIcon {
+  font-size: 28px;
+}
+
+.sellerCardTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.sellerCardSub {
+  font-size: 12px;
+  color: var(--gray-3);
+  margin-top: 2px;
+}
+
+.sellerCardRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray-3);
+}

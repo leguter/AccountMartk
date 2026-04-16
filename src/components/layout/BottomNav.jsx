@@ -8,8 +8,6 @@ const NAV_ITEMS = [
     label: 'Market',
     icon: (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={active ? 0 : 2}>
-        <path d="M3 3h18v4H3zM3 11h18v4H3zM3 19h18v4H3z" strokeLinecap="round" strokeLinejoin="round"/>
-        {active && <path d="M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z"/>}
         <rect x="3" y="3" width="18" height="4" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
         <rect x="3" y="10" width="18" height="4" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
         <rect x="3" y="17" width="18" height="4" rx="1" strokeLinecap="round" strokeLinejoin="round"/>
@@ -27,21 +25,23 @@ const NAV_ITEMS = [
     ),
   },
   {
+    path: '/create-lot',
+    label: 'Sell',
+    isSell: true,
+    icon: () => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    ),
+  },
+  {
     path: '/profile',
     label: 'Profile',
     icon: (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke={active ? 'none' : 'currentColor'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        {active ? (
-          <>
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </>
-        ) : (
-          <>
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </>
-        )}
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
       </svg>
     ),
   },
@@ -50,17 +50,22 @@ const NAV_ITEMS = [
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { selection } = useHaptic();
+  const { selection, impact } = useHaptic();
 
-  const handleNav = (path) => {
-    if (location.pathname !== path) {
+  const handleNav = (item) => {
+    if (item.isSell) {
+      impact('medium');
+    } else {
       selection();
-      navigate(path);
+    }
+    if (location.pathname !== item.path) {
+      navigate(item.path);
     }
   };
 
-  // Hide on product detail pages
-  if (location.pathname.startsWith('/product/')) return null;
+  // Hide on detail / chat / create pages that use full-screen layout
+  const hideOn = ['/product/', '/chat/', '/create-lot', '/user/', '/profile/balance'];
+  if (hideOn.some((p) => location.pathname.startsWith(p))) return null;
 
   return (
     <nav className={styles.nav}>
@@ -70,11 +75,26 @@ export default function BottomNav() {
             item.path === '/'
               ? location.pathname === '/'
               : location.pathname.startsWith(item.path);
+
+          if (item.isSell) {
+            return (
+              <button
+                key={item.path}
+                className={styles.sellBtn}
+                onClick={() => handleNav(item)}
+                aria-label="Sell"
+              >
+                <span className={styles.sellBtnInner}>{item.icon(false)}</span>
+                <span className={styles.navLabel}>Sell</span>
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.path}
               className={[styles.navItem, active ? styles['navItem--active'] : ''].join(' ')}
-              onClick={() => handleNav(item.path)}
+              onClick={() => handleNav(item)}
             >
               <span className={styles.navIcon}>{item.icon(active)}</span>
               <span className={styles.navLabel}>{item.label}</span>

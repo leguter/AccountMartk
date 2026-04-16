@@ -1,11 +1,15 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, Component } from 'react';
 import { useUserStore } from './store';
 import BottomNav from './components/layout/BottomNav';
 import Marketplace from './pages/Marketplace';
 import ProductDetail from './pages/ProductDetail';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import UserProfilePage from './pages/UserProfilePage';
+import CreateLotPage from './pages/CreateLotPage';
+import ChatPage from './pages/ChatPage';
+import ProfileBalancePage from './pages/ProfileBalancePage';
 import styles from './App.module.css';
 
 function AppInner() {
@@ -23,18 +27,65 @@ function AppInner() {
   return (
     <div className={styles.app}>
       <main className={styles.main} key={location.pathname}>
-        <Routes>
-          <Route path="/" element={<Marketplace />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
+            <Route path="/" element={<Marketplace />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/user/:id" element={<UserProfilePage />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/balance" element={<ProfileBalancePage />} />
+            <Route path="/create-lot" element={<CreateLotPage />} />
+            <Route path="/chat/:orderId" element={<ChatPage />} />
+          </Routes>
+        </ErrorBoundary>
       </main>
       <BottomNav />
     </div>
   );
 }
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{
+          minHeight: '100dvh', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: '24px', textAlign: 'center', gap: '16px',
+          background: 'var(--black)', color: 'var(--white)'
+        }}>
+          <div style={{ fontSize: 40 }}>⚠️</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18 }}>Something went wrong</h2>
+          <p style={{ color: 'var(--gray-3)', fontSize: 13, maxWidth: 300 }}>
+            {this.state.error.message}
+          </p>
+          <button
+            onClick={() => { this.setState({ error: null }); window.history.back(); }}
+            style={{
+              marginTop: 8, padding: '10px 24px', borderRadius: 12,
+              background: 'var(--yellow)', color: 'var(--black)',
+              fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none'
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 function LoadingScreen() {
   return (
     <div className={styles.loadingScreen}>

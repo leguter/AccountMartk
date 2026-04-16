@@ -68,3 +68,41 @@
   background: var(--yellow);
   display: none;
 }
+
+/* ─── Sell button ──────────────────────────────────────────────── */
+.sellBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  height: 100%;
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.sellBtn:active {
+  transform: scale(0.88);
+}
+
+.sellBtnInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--yellow);
+  color: var(--black);
+  box-shadow: 0 0 16px rgba(245, 197, 24, 0.4);
+  transition: box-shadow var(--transition-fast);
+}
+
+.sellBtn:active .sellBtnInner {
+  box-shadow: 0 0 8px rgba(245, 197, 24, 0.2);
+}
+
+.sellBtn .navLabel {
+  color: var(--yellow);
+}

@@ -1,11 +1,22 @@
-import { useUserStore, usePaymentStore } from '../store';
+import { useNavigate, Link } from 'react-router-dom';
+import { useUserStore, usePaymentStore, useSellerStore, useOrderStore } from '../store';
 import { usePurchaseHistory } from '../hooks';
 import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
 import styles from './Profile.module.css';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
   const purchaseHistory = usePaymentStore((s) => s.purchaseHistory);
+  const getBalance = useSellerStore((s) => s.getBalance);
+  const myLots = useSellerStore((s) => s.lots);
+  const orders = useOrderStore((s) => s.orders);
+
+  const userId = user?.id ?? 'demo_user';
+  const balance = getBalance(userId);
+  const activeOrdersCount = orders.filter(
+    (o) => String(o.sellerId) === String(userId) && o.status !== 'completed'
+  ).length;
 
   // Combine local + fetched history
   const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory(user?.id);
@@ -141,6 +152,26 @@ export default function Profile() {
         )}
       </div>
 
+      {/* Seller Dashboard */}
+      <Link to="/profile/balance" className={styles.sellerCard}>
+        <div className={styles.sellerCardLeft}>
+          <div className={styles.sellerCardIcon}>🏪</div>
+          <div>
+            <div className={styles.sellerCardTitle}>Seller Dashboard</div>
+            <div className={styles.sellerCardSub}>
+              {myLots.length} listing{myLots.length !== 1 ? 's' : ''}
+              {activeOrdersCount > 0 && ` · ${activeOrdersCount} active order${activeOrdersCount !== 1 ? 's' : ''}`}
+            </div>
+          </div>
+        </div>
+        <div className={styles.sellerCardRight}>
+          <StarsPrice amount={balance.available} size="sm" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </Link>
+
       {/* Settings / Actions */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Settings</h2>
@@ -150,9 +181,17 @@ export default function Profile() {
             { icon: '🌐', label: 'Language', value: user?.language_code?.toUpperCase() || 'EN' },
             { icon: '📋', label: 'Terms of Service', action: 'link' },
             { icon: '🔒', label: 'Privacy Policy', action: 'link' },
-            { icon: '📞', label: 'Support', action: 'link' },
+            { icon: '📞', label: 'Support', action: 'support' },
           ].map((item) => (
-            <div key={item.label} className={styles.settingItem}>
+            <div
+              key={item.label}
+              className={styles.settingItem}
+              onClick={() => {
+                if (item.action === 'support') {
+                  alert('Support will be implemented later. For now, contact @support on Telegram.');
+                }
+              }}
+            >
               <span className={styles.settingIcon}>{item.icon}</span>
               <span className={styles.settingLabel}>{item.label}</span>
               <span className={styles.settingRight}>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProduct } from '../hooks';
 import { Button, Badge, StarsPrice, Skeleton, ErrorState, Avatar } from '../components/ui';
-import PaymentModal from '../components/marketplace/PaymentModal';
 import { useHaptic } from '../hooks';
+import { useUserStore, useOrderStore, useChatStore } from '../store';
 import styles from './ProductDetail.module.css';
 
 const CATEGORY_ICONS = {
@@ -14,17 +14,44 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { product, isLoading, error } = useProduct(id);
-  const [showPayment, setShowPayment] = useState(false);
+  const [buying, setBuying] = useState(false);
   const { impact } = useHaptic();
+  const user = useUserStore((s) => s.user);
+  const createOrder = useOrderStore((s) => s.createOrder);
+  const sendMessage = useChatStore((s) => s.sendMessage);
 
   const handleBack = () => {
     impact('light');
     navigate(-1);
   };
 
-  const handleBuy = () => {
+  const handleBuy = async () => {
+    if (!product) return;
     impact('medium');
-    setShowPayment(true);
+    setBuying(true);
+    await new Promise((r) => setTimeout(r, 600));
+
+    const buyerId = user?.id ?? 'demo_buyer';
+    const sellerId = product?.seller?.username ?? 'seller';
+
+    const order = createOrder({
+      lotId: product.id,
+      lotTitle: product.title,
+      buyerId,
+      sellerId,
+      amount: product.price,
+    });
+
+    // Welcome system message
+    sendMessage({
+      orderId: order.id,
+      senderId: 'system',
+      text: `🛒 Order created for "${product.title}" — ${product.price} Stars. Please proceed with payment.`,
+      type: 'system',
+    });
+
+    setBuying(false);
+    navigate(`/chat/${order.id}`);
   };
 
   if (error) return (
@@ -128,7 +155,7 @@ export default function ProductDetail() {
       {product.seller && (
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Seller</h2>
-          <div className={styles.sellerCard}>
+          <Link to={`/user/${product.seller.username}`} className={styles.sellerCard}>
             <Avatar name={product.seller.username} size={44} />
             <div className={styles.sellerInfo}>
               <div className={styles.sellerName}>@{product.seller.username}</div>
@@ -143,7 +170,7 @@ export default function ProductDetail() {
             <div className={styles.sellerBadge}>
               {product.seller.sales > 200 ? '🏆 Top Seller' : '✅ Trusted'}
             </div>
-          </div>
+          </Link>
         </div>
       )}
 
@@ -183,6 +210,7 @@ export default function ProductDetail() {
           variant="primary"
           size="lg"
           onClick={handleBuy}
+          loading={buying}
           icon={
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
@@ -193,9 +221,7 @@ export default function ProductDetail() {
         </Button>
       </div>
 
-      {showPayment && (
-        <PaymentModal product={product} onClose={() => setShowPayment(false)} />
-      )}
+
     </div>
   );
 }

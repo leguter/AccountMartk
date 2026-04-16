@@ -8,7 +8,7 @@ import {
   USER_PERSIST_KEY,
 } from '../services/api';
 
-// User store
+// ─── USER STORE ───────────────────────────────────────────────────────────────
 export const useUserStore = create(
   persist(
     (set, get) => ({
@@ -140,7 +140,7 @@ export const useUserStore = create(
   )
 );
 
-// Marketplace store
+// ─── MARKETPLACE STORE ────────────────────────────────────────────────────────
 export const useMarketplaceStore = create((set, get) => ({
   products: [],
   filteredProducts: [],
@@ -214,7 +214,7 @@ export const useMarketplaceStore = create((set, get) => ({
   },
 }));
 
-// Cart / Payment store
+// ─── PAYMENT STORE ────────────────────────────────────────────────────────────
 export const usePaymentStore = create((set) => ({
   paymentStatus: null, // null | 'pending' | 'success' | 'error'
   paymentError: null,
@@ -232,3 +232,131 @@ export const usePaymentStore = create((set) => ({
   resetPayment: () =>
     set({ paymentStatus: null, paymentError: null }),
 }));
+
+// ─── ORDER STORE ─────────────────────────────────────────────────────────────
+// Structure: { id, lotId, lotTitle, buyerId, sellerId, status, amount, isConfirmedByBuyer, createdAt }
+// Status: 'pending' | 'paid' | 'completed'
+export const useOrderStore = create(
+  persist(
+    (set, get) => ({
+      orders: [],
+
+      createOrder: ({ lotId, lotTitle, buyerId, sellerId, amount }) => {
+        const order = {
+          id: `order_${Date.now()}`,
+          lotId,
+          lotTitle,
+          buyerId,
+          sellerId,
+          status: 'pending',
+          amount,
+          isConfirmedByBuyer: false,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({ orders: [order, ...state.orders] }));
+        return order;
+      },
+
+      payOrder: (orderId) => {
+        set((state) => ({
+          orders: state.orders.map((o) =>
+            o.id === orderId ? { ...o, status: 'paid' } : o
+          ),
+        }));
+      },
+
+      confirmOrder: (orderId) => {
+        const order = get().orders.find((o) => o.id === orderId);
+        if (!order) return;
+        set((state) => ({
+          orders: state.orders.map((o) =>
+            o.id === orderId
+              ? { ...o, status: 'completed', isConfirmedByBuyer: true }
+              : o
+          ),
+        }));
+        // Credit the seller's available balance
+        useSellerStore.getState().creditBalance(order.sellerId, order.amount);
+      },
+
+      getOrderById: (orderId) => {
+        return get().orders.find((o) => o.id === orderId) ?? null;
+      },
+    }),
+    { name: 'accountmark-orders' }
+  )
+);
+
+// ─── CHAT STORE ──────────────────────────────────────────────────────────────
+// Messages: { id, orderId, senderId, text, type: 'text'|'system', createdAt }
+export const useChatStore = create(
+  persist(
+    (set, get) => ({
+      chats: {}, // { [orderId]: Message[] }
+
+      getMessages: (orderId) => get().chats[orderId] ?? [],
+
+      sendMessage: ({ orderId, senderId, text, type = 'text' }) => {
+        const message = {
+          id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          orderId,
+          senderId,
+          text,
+          type,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          chats: {
+            ...state.chats,
+            [orderId]: [...(state.chats[orderId] ?? []), message],
+          },
+        }));
+        return message;
+      },
+    }),
+    { name: 'accountmark-chats' }
+  )
+);
+
+// ─── SELLER STORE ─────────────────────────────────────────────────────────────
+export const useSellerStore = create(
+  persist(
+    (set, get) => ({
+      balances: {}, // { [userId]: { available, pending } }
+      lots: [],     // lots created by current user
+
+      getBalance: (userId) => {
+        return get().balances[userId] ?? { available: 0, pending: 0 };
+      },
+
+      creditBalance: (userId, amount) => {
+        set((state) => {
+          const current = state.balances[userId] ?? { available: 0, pending: 0 };
+          return {
+            balances: {
+              ...state.balances,
+              [userId]: { ...current, available: current.available + amount },
+            },
+          };
+        });
+      },
+
+      withdraw: (userId, amount) => {
+        const current = get().balances[userId] ?? { available: 0, pending: 0 };
+        if (current.available < amount) return false;
+        set((state) => ({
+          balances: {
+            ...state.balances,
+            [userId]: { ...current, available: current.available - amount },
+          },
+        }));
+        return true;
+      },
+
+      addLot: (lot) => {
+        set((state) => ({ lots: [lot, ...state.lots] }));
+      },
+    }),
+    { name: 'accountmark-seller' }
+  )
+);
