@@ -7,7 +7,7 @@ import { mockProducts, mockPurchaseHistory } from './mockData';
  */
 export const USE_MOCK = false;
 
-const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'http://localhost:4000';
+const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'https://account-martk.vercel.app';
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
@@ -55,6 +55,8 @@ const api = axios.create({
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
+
+export default api;
 
 api.interceptors.request.use((config) => {
   const initData = window.Telegram?.WebApp?.initData;

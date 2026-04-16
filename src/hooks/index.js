@@ -1,35 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { productService, paymentService, chatService, balanceService } from '../services/api';
 import { useMarketplaceStore, usePaymentStore, useUserStore } from '../store';
-import axios from 'axios';
 
-const _api = axios.create({
-  baseURL: (import.meta.env.BASE_URL || '').replace(/\/$/, '') || 'https://account-martk.vercel.app/',
-  timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
-});
-_api.interceptors.request.use((config) => {
-  const initData = window.Telegram?.WebApp?.initData;
-  if (initData) config.headers['X-Telegram-Init-Data'] = initData;
-  const token = (() => {
-    try {
-      const raw = localStorage.getItem('accountmark-user');
-      return raw ? JSON.parse(raw)?.state?.accessToken : null;
-    } catch { return null; }
-  })();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-_api.interceptors.response.use(
-  (res) => res.data,
-  (err) => {
-    const body = err.response?.data;
-    const message = (typeof body?.message === 'string' && body.message) ||
-      (typeof body?.error === 'string' && body.error) ||
-      err.message || 'Unknown error';
-    return Promise.reject(new Error(message));
-  }
-);
+// Re-use the correctly configured axios instance from services/api
+// (it reads VITE_API_URL and attaches auth headers automatically)
+import api from '../services/api';
 
 // Generic async hook
 export function useAsync(asyncFn, deps = []) {
@@ -236,7 +211,7 @@ export function useOrder(orderId) {
     if (!orderId) return;
     setLoading(true);
     try {
-      const res = await _api.get(`/api/orders/${orderId}`);
+      const res = await api.get(`/api/orders/${orderId}`);
       setOrder(res.order);
       setError(null);
     } catch (err) {
