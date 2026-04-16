@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useProduct } from '../hooks';
+import { useProduct, usePayment, useHaptic } from '../hooks';
 import { Button, Badge, StarsPrice, Skeleton, ErrorState, Avatar } from '../components/ui';
-import { useHaptic } from '../hooks';
-import { useUserStore, useOrderStore, useChatStore } from '../store';
 import styles from './ProductDetail.module.css';
 
 const CATEGORY_ICONS = {

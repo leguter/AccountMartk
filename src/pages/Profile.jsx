@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserStore, usePaymentStore, useSellerStore, useOrderStore } from '../store';
-import { usePurchaseHistory } from '../hooks';
+import { useBalance, useMyLots, usePurchaseHistory } from '../hooks';
 import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
 import styles from './Profile.module.css';
 
