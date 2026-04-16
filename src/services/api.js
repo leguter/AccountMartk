@@ -7,7 +7,9 @@ import { mockProducts, mockPurchaseHistory } from './mockData';
  */
 export const USE_MOCK = false;
 
-const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'https://account-martk.vercel.app';
+// In dev: Vite proxy forwards /api/* → http://localhost:4000 (no CORS issues)
+// In prod: set VITE_API_URL to your deployed backend, e.g. https://your-api.onrender.com
+const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
