@@ -1,26 +1,46 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useOrderStore } from '../store';
-import { StarsPrice } from '../components/ui';
+import { useOrder, useHaptic } from '../hooks';
+import { paymentService } from '../services/api';
+import { StarsPrice, Button, Skeleton } from '../components/ui';
 import ChatWindow from '../components/chat/ChatWindow';
 import styles from './ChatPage.module.css';
 
 export default function ChatPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const getOrderById = useOrderStore((s) => s.getOrderById);
-  const order = getOrderById(orderId);
+  const { order, isLoading, error, refresh } = useOrder(orderId);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const { impact, notification } = useHaptic();
 
   const handleBack = () => navigate(-1);
+
+  const handleConfirm = async () => {
+    if (!order) return;
+    impact('heavy');
+    setConfirming(true);
+    try {
+      await paymentService.confirmOrder(order.id);
+      notification('success');
+      refresh();
+    } catch (err) {
+      console.error('Confirm failed:', err);
+      notification('error');
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   const statusLabel = {
     pending: { text: 'Awaiting payment', color: 'var(--yellow)' },
     paid: { text: 'In escrow', color: 'var(--info)' },
     completed: { text: 'Completed', color: 'var(--success)' },
+    cancelled: { text: 'Cancelled', color: 'var(--error)' },
   };
 
   const status = order ? statusLabel[order.status] : null;
+
+  if (isLoading) return <div className={styles.page}><Skeleton height={60} /></div>;
+  if (error) return <div className={styles.page}>{error}</div>;
 
   return (
     <div className={styles.page}>
@@ -33,7 +53,7 @@ export default function ChatPage() {
 
         <div className={styles.topBarCenter}>
           <span className={styles.topBarTitle}>
-            {order ? order.lotTitle : 'Chat'}
+            {order ? order.lot?.title : 'Chat'}
           </span>
           {status && (
             <span className={styles.statusChip} style={{ color: status.color }}>
@@ -41,6 +61,18 @@ export default function ChatPage() {
             </span>
           )}
         </div>
+
+        {order?.status === 'paid' && (
+          <Button 
+            variant="success" 
+            size="sm" 
+            onClick={handleConfirm}
+            loading={confirming}
+            className={styles.confirmBtn}
+          >
+            Confirm Receipt
+          </Button>
+        )}
 
         {order && (
           <div className={styles.topBarAmount}>
@@ -59,7 +91,7 @@ export default function ChatPage() {
       </header>
 
       <div className={styles.chatBody}>
-        <ChatWindow orderId={orderId} />
+        <ChatWindow order={order} refresh={refresh} />
       </div>
 
       {/* Support Modal */}

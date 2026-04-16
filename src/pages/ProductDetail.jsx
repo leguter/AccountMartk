@@ -14,11 +14,9 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { product, isLoading, error } = useProduct(id);
-  const [buying, setBuying] = useState(false);
+  const { purchase, paymentStatus } = usePayment();
+  const buying = paymentStatus === 'pending';
   const { impact } = useHaptic();
-  const user = useUserStore((s) => s.user);
-  const createOrder = useOrderStore((s) => s.createOrder);
-  const sendMessage = useChatStore((s) => s.sendMessage);
 
   const handleBack = () => {
     impact('light');
@@ -28,30 +26,15 @@ export default function ProductDetail() {
   const handleBuy = async () => {
     if (!product) return;
     impact('medium');
-    setBuying(true);
-    await new Promise((r) => setTimeout(r, 600));
-
-    const buyerId = user?.id ?? 'demo_buyer';
-    const sellerId = product?.seller?.username ?? 'seller';
-
-    const order = createOrder({
-      lotId: product.id,
-      lotTitle: product.title,
-      buyerId,
-      sellerId,
-      amount: product.price,
-    });
-
-    // Welcome system message
-    sendMessage({
-      orderId: order.id,
-      senderId: 'system',
-      text: `🛒 Order created for "${product.title}" — ${product.price} Stars. Please proceed with payment.`,
-      type: 'system',
-    });
-
-    setBuying(false);
-    navigate(`/chat/${order.id}`);
+    
+    try {
+      const orderId = await purchase(product);
+      if (orderId) {
+        navigate(`/chat/${orderId}`);
+      }
+    } catch (err) {
+      console.error('Purchase failed:', err);
+    }
   };
 
   if (error) return (

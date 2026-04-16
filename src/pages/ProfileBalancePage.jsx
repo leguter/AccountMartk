@@ -1,47 +1,34 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useUserStore, useSellerStore, useOrderStore } from '../store';
-import { Button, StarsPrice, EmptyState } from '../components/ui';
+import { useBalance, useMyLots, usePurchaseHistory } from '../hooks';
+import { balanceService } from '../services/api';
+import { Button, StarsPrice, EmptyState, Skeleton } from '../components/ui';
 import { ProductCard } from '../components/marketplace/ProductCard';
 import styles from './ProfileBalancePage.module.css';
 
 export default function ProfileBalancePage() {
   const navigate = useNavigate();
-  const user = useUserStore((s) => s.user);
-  const userId = user?.id ?? 'demo_user';
+  const { balance, pendingBalance, loading: balanceLoading, refresh: refreshBalance } = useBalance();
+  const { data: lotsData, loading: lotsLoading } = useMyLots();
+  const lots = lotsData || [];
 
-  const getBalance = useSellerStore((s) => s.getBalance);
-  const lots = useSellerStore((s) => s.lots);
-  const withdraw = useSellerStore((s) => s.withdraw);
-
-  const orders = useOrderStore((s) => s.orders);
-
-  const balance = getBalance(userId);
-
-  // Pending = sum of all paid-but-not-confirmed orders where I'm the seller
-  const pendingAmount = orders
-    .filter((o) => String(o.sellerId) === String(userId) && o.status === 'paid')
-    .reduce((acc, o) => acc + o.amount, 0);
-
-  const activeOrders = orders.filter(
-    (o) => String(o.sellerId) === String(userId) && o.status !== 'completed'
-  );
+  const { data: ordersData, loading: ordersLoading } = usePurchaseHistory();
+  const activeOrders = ordersData ? ordersData.filter(o => o.status !== 'completed') : [];
 
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawMsg, setWithdrawMsg] = useState(null);
 
   const handleWithdraw = async () => {
-    if (balance.available <= 0) return;
+    if (balance <= 0) return;
     setWithdrawing(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    const ok = withdraw(userId, balance.available);
-    setWithdrawing(false);
-    setWithdrawMsg(
-      ok
-        ? `✅ Withdrawal of ${balance.available} Stars initiated! (Simulated)`
-        : '❌ Insufficient balance'
-    );
-    setTimeout(() => setWithdrawMsg(null), 4000);
+    try {
+      await balanceService.withdraw(balance);
+      setWithdrawMsg(`✅ Withdrawal of ${balance} Stars initiated!`);
+      refreshBalance();
+    } catch (err) {
+      setWithdrawMsg(`❌ Error: ${err.message}`);
+    } finally {
+      setWithdrawing(false);
+      setTimeout(() => setWithdrawMsg(null), 4000);
+    }
   };
 
   const handleBack = () => navigate(-1);
@@ -72,13 +59,13 @@ export default function ProfileBalancePage() {
           <div className={styles.balanceGlow} />
           <div className={styles.balanceLabel}>Available Balance</div>
           <div className={styles.balanceAmount}>
-            <StarsPrice amount={balance.available} size="lg" />
+            {balanceLoading ? <Skeleton width={120} height={40} /> : <StarsPrice amount={balance} size="lg" />}
           </div>
-          {pendingAmount > 0 && (
+          {pendingBalance > 0 && (
             <div className={styles.pendingRow}>
               <span className={styles.pendingDot} />
               <span className={styles.pendingText}>
-                <StarsPrice amount={pendingAmount} size="sm" /> pending (in escrow)
+                <StarsPrice amount={pendingBalance} size="sm" /> pending (in escrow)
               </span>
             </div>
           )}
@@ -93,7 +80,7 @@ export default function ProfileBalancePage() {
               size="md"
               onClick={handleWithdraw}
               loading={withdrawing}
-              disabled={balance.available <= 0}
+              disabled={balance <= 0 || balanceLoading}
               fullWidth
             >
               Withdraw Stars
@@ -101,7 +88,7 @@ export default function ProfileBalancePage() {
             <Button
               variant="ghost"
               size="md"
-              onClick={() => alert('Support will be implemented later.')}
+              onClick={() => alert('Support via @support')}
               fullWidth
             >
               💬 Support
@@ -118,7 +105,9 @@ export default function ProfileBalancePage() {
             )}
           </div>
 
-          {activeOrders.length === 0 ? (
+          {ordersLoading ? (
+            <Skeleton height={80} />
+          ) : activeOrders.length === 0 ? (
             <EmptyState
               icon="📦"
               title="No active orders"
@@ -133,16 +122,15 @@ export default function ProfileBalancePage() {
                   className={styles.orderCard}
                 >
                   <div className={styles.orderCardLeft}>
-                    <div className={styles.orderTitle}>{order.lotTitle}</div>
-                    <div className={styles.orderDate}>{formatDate(order.createdAt)}</div>
+                    <div className={styles.orderTitle}>{order.productTitle || 'Lot'}</div>
+                    <div className={styles.orderDate}>{formatDate(order.date)}</div>
                   </div>
                   <div className={styles.orderCardRight}>
-                    <StarsPrice amount={order.amount} size="sm" />
+                    <StarsPrice amount={order.price} size="sm" />
                     <span
                       className={styles.orderStatus}
-                      style={{ color: statusMap[order.status]?.color }}
                     >
-                      {statusMap[order.status]?.label}
+                      {order.status === 'pending_confirmation' ? 'In escrow' : order.status}
                     </span>
                   </div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -161,7 +149,11 @@ export default function ProfileBalancePage() {
             <Link to="/create-lot" className={styles.createBtn}>+ New</Link>
           </div>
 
-          {lots.length === 0 ? (
+          {lotsLoading ? (
+            <div className={styles.lotsGrid}>
+              {[1, 2].map((i) => <Skeleton key={i} height={200} radius="16px" />)}
+            </div>
+          ) : lots.length === 0 ? (
             <EmptyState
               icon="🏷️"
               title="No listings yet"

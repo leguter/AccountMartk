@@ -5,7 +5,7 @@ import { mockProducts, mockPurchaseHistory } from './mockData';
  * Mock mode: default ON for local dev without a server.
  * Production: set VITE_USE_MOCK=false and VITE_API_URL=https://your-api.onrender.com
  */
-export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'true') === 'true';
+export const USE_MOCK = false;
 
 const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'http://localhost:4000';
 
@@ -139,15 +139,15 @@ export const authService = {
   },
 };
 
-// ─── PRODUCTS (backend: GET /api/products, GET /api/products/:id) ────────────
+// ─── PRODUCTS (backend: GET /api/lots, GET /api/lots/:id) ───────────────
 export const productService = {
   async getAll() {
     if (USE_MOCK) {
       await delay(700);
       return { success: true, data: mockProducts };
     }
-    const r = await api.get('/api/products');
-    const raw = Array.isArray(r.products) ? r.products : [];
+    const r = await api.get('/api/lots');
+    const raw = Array.isArray(r.lots) ? r.lots : [];
     const available = raw.filter((p) => !p.isSold);
     const data = available.map(normalizeProduct);
     return { success: true, data };
@@ -160,32 +160,17 @@ export const productService = {
       if (!product) throw new Error('Product not found');
       return { success: true, data: product };
     }
-    const r = await api.get(`/api/products/${id}`);
-    if (!r.product) throw new Error('Product not found');
-    return { success: true, data: normalizeProduct(r.product) };
+    const r = await api.get(`/api/lots/${id}`);
+    if (!r.lot) throw new Error('Product not found');
+    return { success: true, data: normalizeProduct(r.lot) };
   },
 
   async getFeatured() {
-    if (USE_MOCK) {
-      await delay(500);
-      const featured = mockProducts.filter((p) => p.badge === 'HOT' || p.badge === 'PREMIUM');
-      return { success: true, data: featured };
-    }
     const { data } = await productService.getAll();
     return { success: true, data: data.slice(0, 8) };
   },
 
   async search(query) {
-    if (USE_MOCK) {
-      await delay(400);
-      const q = query.toLowerCase();
-      const results = mockProducts.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q)
-      );
-      return { success: true, data: results };
-    }
     const { data } = await productService.getAll();
     const q = query.toLowerCase();
     const results = data.filter(
@@ -198,34 +183,35 @@ export const productService = {
   },
 
   async getByCategory(category) {
-    if (USE_MOCK) {
-      await delay(500);
-      const data =
-        category === 'all'
-          ? mockProducts
-          : mockProducts.filter((p) => p.category === category);
-      return { success: true, data };
-    }
     const { data } = await productService.getAll();
     const filtered =
       category === 'all' ? data : data.filter((p) => p.category === category);
     return { success: true, data: filtered };
   },
+
+  async createLot(lotData) {
+    return api.post('/api/lots', lotData);
+  },
+
+  async getMyLots(userId) {
+    const r = await api.get(`/api/users/${userId}/lots`);
+    return { success: true, data: r.lots.map(normalizeProduct) };
+  },
 };
 
 // ─── ORDERS + PAYMENTS (backend: order → createInvoiceLink) ──────────────────
 export const paymentService = {
-  /** Mock: fake invoice. Real: POST /api/orders then POST /api/payments/create */
-  async createInvoice(productId) {
+  /** Real: POST /api/orders then POST /api/payments/create */
+  async createInvoice(lotId) {
     if (USE_MOCK) {
       await delay(600);
       return {
         success: true,
-        invoiceUrl: `https://t.me/invoice/mock_${productId}_${Date.now()}`,
+        invoiceUrl: `https://t.me/invoice/mock_${lotId}_${Date.now()}`,
         invoiceId: `inv_${Date.now()}`,
       };
     }
-    const orderRes = await api.post('/api/orders', { productId: String(productId) });
+    const orderRes = await api.post('/api/orders', { lotId: String(lotId) });
     const orderId = orderRes.order?.id;
     if (!orderId) throw new Error('Could not create order');
     const payRes = await api.post('/api/payments/create', { orderId });
@@ -238,38 +224,26 @@ export const paymentService = {
     };
   },
 
-  /**
-   * Backend finalizes payment in POST /api/payments/webhook (Telegram update).
-   * No separate verify endpoint — this is a no-op in live mode after Stars UI completes.
-   */
-  async verifyPayment(_invoiceId) {
-    if (USE_MOCK) {
-      await delay(1000);
-      return { success: true, status: 'paid' };
-    }
-    return { success: true, status: 'paid' };
+  async confirmOrder(orderId) {
+    return api.patch(`/api/orders/${orderId}/confirm`);
   },
 
-  /** Mock uses userId; live API uses JWT (GET /api/orders/user). */
-  async getPurchaseHistory(_userId) {
+  async getPurchaseHistory() {
     if (USE_MOCK) {
       await delay(500);
       return { success: true, data: mockPurchaseHistory };
     }
-    if (!resolveAccessToken()) {
-      return { success: true, data: [] };
-    }
-    const r = await api.get('/api/orders/user');
+    const r = await api.get('/api/orders');
     const orders = Array.isArray(r.orders) ? r.orders : [];
     const data = orders
-      .filter((o) => o.status === 'paid' && o.product)
+      .filter((o) => (o.status === 'paid' || o.status === 'completed') && o.lot)
       .map((o) => ({
         id: o.id,
-        productId: o.productId,
-        productTitle: o.product.title,
-        price: o.product.price,
+        productId: o.lotId,
+        productTitle: o.lot.title,
+        price: o.lot.price,
         date: o.createdAt || new Date().toISOString(),
-        status: 'completed',
+        status: o.status === 'completed' ? 'completed' : 'pending_confirmation',
       }));
     return { success: true, data };
   },
@@ -285,5 +259,33 @@ export const paymentService = {
         else reject(new Error(`Payment failed: ${status}`));
       });
     });
+  },
+};
+
+// ─── CHAT (backend: GET /api/chat/:orderId, POST /api/chat/:orderId) ──────────
+export const chatService = {
+  async getMessages(orderId) {
+    const r = await api.get(`/api/chat/${orderId}`);
+    return { success: true, data: r.messages || [] };
+  },
+
+  async sendMessage(orderId, text) {
+    return api.post(`/api/chat/${orderId}`, { text });
+  },
+};
+
+// ─── BALANCE (backend: GET /api/balance, POST /api/withdraw) ─────────────────
+export const balanceService = {
+  async getBalance() {
+    return api.get('/api/balance');
+  },
+
+  async getTransactions() {
+    const r = await api.get('/api/transactions');
+    return { success: true, data: r.transactions || [] };
+  },
+
+  async withdraw(amount) {
+    return api.post('/api/withdraw', { amount });
   },
 };

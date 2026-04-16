@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserStore, useSellerStore } from '../store';
 import { Button } from '../components/ui';
 import styles from './CreateLotPage.module.css';
+import { productService } from '../services/api';
 
 const CATEGORIES = [
   { value: 'telegram', label: '✈️ Telegram' },
@@ -25,9 +25,6 @@ const INITIAL_FORM = {
 
 export default function CreateLotPage() {
   const navigate = useNavigate();
-  const user = useUserStore((s) => s.user);
-  const addLot = useSellerStore((s) => s.addLot);
-
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,37 +55,24 @@ export default function CreateLotPage() {
 
     setIsSubmitting(true);
 
-    // Simulate async
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      const lotData = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        category: form.category,
+        // Backend handles followers/stats in description or future expansion
+      };
 
-    const lot = {
-      id: `lot_${Date.now()}`,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      price: Number(form.price),
-      category: form.category,
-      followers: form.followers ? Number(form.followers) : undefined,
-      stats: {
-        age: form.age || '—',
-        engagementRate: form.engagementRate || '—',
-        country: form.country || '—',
-      },
-      seller: {
-        username: user?.username || 'demo_user',
-        rating: 5.0,
-        sales: 0,
-      },
-      rating: 0,
-      reviews: 0,
-      verified: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    addLot(lot);
-    setIsSubmitting(false);
-    setSuccess(true);
-
-    setTimeout(() => navigate('/'), 1500);
+      await productService.createLot(lotData);
+      setIsSubmitting(false);
+      setSuccess(true);
+      setTimeout(() => navigate('/'), 1500);
+    } catch (err) {
+      console.error('Create lot failed:', err);
+      setErrors({ global: err.message });
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => navigate(-1);

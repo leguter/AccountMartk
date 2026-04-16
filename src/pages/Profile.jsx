@@ -6,29 +6,14 @@ import styles from './Profile.module.css';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const user = useUserStore((s) => s.user);
-  const purchaseHistory = usePaymentStore((s) => s.purchaseHistory);
-  const getBalance = useSellerStore((s) => s.getBalance);
-  const myLots = useSellerStore((s) => s.lots);
-  const orders = useOrderStore((s) => s.orders);
+  const { balance, loading: balanceLoading } = useBalance();
+  const { data: lotsData } = useMyLots();
+  const myLots = lotsData || [];
 
-  const userId = user?.id ?? 'demo_user';
-  const balance = getBalance(userId);
-  const activeOrdersCount = orders.filter(
-    (o) => String(o.sellerId) === String(userId) && o.status !== 'completed'
-  ).length;
-
-  // Combine local + fetched history
-  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory(user?.id);
-  const allHistory = [...purchaseHistory, ...(fetchedHistory?.data || [])];
-
-  // Deduplicate
-  const seen = new Set();
-  const uniqueHistory = allHistory.filter((p) => {
-    if (seen.has(p.id)) return false;
-    seen.add(p.id);
-    return true;
-  });
+  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory();
+  const uniqueHistory = fetchedHistory || [];
+  
+  const activeOrdersCount = uniqueHistory.filter(o => o.status !== 'completed').length;
 
   const totalSpent = uniqueHistory.reduce((acc, p) => acc + (p.price || 0), 0);
 
@@ -165,7 +150,7 @@ export default function Profile() {
           </div>
         </div>
         <div className={styles.sellerCardRight}>
-          <StarsPrice amount={balance.available} size="sm" />
+          {balanceLoading ? <Skeleton width={50} height={20} /> : <StarsPrice amount={balance} size="sm" />}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"/>
           </svg>

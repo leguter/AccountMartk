@@ -115,8 +115,10 @@ export function usePayment() {
         productTitle: product.title || product.username,
         price: product.price,
         date: new Date().toISOString(),
-        status: 'completed',
+        status: 'pending_confirmation',
       });
+
+      return invoiceId;
 
     } catch (err) {
       setPaymentStatus('error');
@@ -137,6 +139,98 @@ export function useDebounce(value, delay = 300) {
   }, [value, delay]);
 
   return debouncedValue;
+}
+
+// Chat messages
+export function useChat(orderId) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchMessages = useCallback(async () => {
+    if (!orderId) return;
+    setLoading(true);
+    try {
+      const res = await chatService.getMessages(orderId);
+      setMessages(res.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    fetchMessages();
+    // Simple polling every 5s
+    const timer = setInterval(fetchMessages, 5000);
+    return () => clearInterval(timer);
+  }, [fetchMessages]);
+
+  const sendMessage = async (text) => {
+    try {
+      const res = await chatService.sendMessage(orderId, text);
+      setMessages((prev) => [...prev, res.data]);
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  return { messages, loading, error, sendMessage, refresh: fetchMessages };
+}
+
+// User balance
+export function useBalance() {
+  const [state, setState] = useState({ balance: 0, pendingBalance: 0, loading: true, error: null });
+
+  const fetchBalance = useCallback(async () => {
+    try {
+      const res = await balanceService.getBalance();
+      setState({ ...res, loading: false, error: null });
+    } catch (err) {
+      setState((s) => ({ ...s, loading: false, error: err.message }));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
+  return { ...state, refresh: fetchBalance };
+}
+
+// Single order
+export function useOrder(orderId) {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchOrder = useCallback(async () => {
+    if (!orderId) return;
+    setLoading(true);
+    try {
+      const res = await api.get(`/api/orders/${orderId}`);
+      setOrder(res.order);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
+
+  return { order, loading, error, refresh: fetchOrder };
+}
+
+// Current user's lots
+export function useMyLots() {
+  const user = useUserStore((s) => s.user);
+  return useAsync(() => productService.getMyLots(user?.id), [user?.id]);
 }
 
 // Telegram haptics

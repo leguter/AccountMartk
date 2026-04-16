@@ -1,22 +1,19 @@
 import { useEffect, useRef } from 'react';
-import { useOrderStore, useChatStore } from '../../store';
 import { useUserStore } from '../../store';
+import { useChat, usePayment, useHaptic } from '../../hooks';
 import { Button, StarsPrice } from '../ui';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import styles from './chat.module.css';
 
-export default function ChatWindow({ orderId }) {
+export default function ChatWindow({ order, refresh }) {
   const user = useUserStore((s) => s.user);
   const currentUserId = user?.id ?? 'demo_user';
+  const orderId = order?.id;
 
-  const order = useOrderStore((s) => s.getOrderById(orderId));
-  const payOrder = useOrderStore((s) => s.payOrder);
-  const confirmOrder = useOrderStore((s) => s.confirmOrder);
-
-  const getMessages = useChatStore((s) => s.getMessages);
-  const sendMessage = useChatStore((s) => s.sendMessage);
-  const messages = getMessages(orderId);
+  const { messages, sendMessage } = useChat(orderId);
+  const { purchase, paymentStatus } = usePayment();
+  const { impact, notification } = useHaptic();
 
   const bottomRef = useRef(null);
 
@@ -24,39 +21,31 @@ export default function ChatWindow({ orderId }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!order) {
-    return (
-      <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-3)' }}>
-        Order not found.
-      </div>
-    );
-  }
+  if (!order) return null;
 
   const isBuyer = String(order.buyerId) === String(currentUserId);
   const isSeller = String(order.sellerId) === String(currentUserId);
 
-  const handleSend = (text) => {
-    sendMessage({ orderId, senderId: currentUserId, text, type: 'text' });
+  const handleSend = async (text) => {
+    try {
+      await sendMessage(text);
+    } catch (err) {
+      console.error('Send failed:', err);
+    }
   };
 
-  const handlePay = () => {
-    payOrder(orderId);
-    sendMessage({
-      orderId,
-      senderId: 'system',
-      text: '✅ Payment has been made. Stars are held in escrow.',
-      type: 'system',
-    });
-  };
-
-  const handleConfirm = () => {
-    confirmOrder(orderId);
-    sendMessage({
-      orderId,
-      senderId: 'system',
-      text: '🎉 Order confirmed! Stars have been released to the seller.',
-      type: 'system',
-    });
+  const handlePay = async () => {
+    impact('medium');
+    try {
+      // In real Telegram, purchase() triggers stars invoice.
+      // After it returns, we refresh the order to see "paid" status.
+      await purchase(order.lot);
+      notification('success');
+      refresh();
+    } catch (err) {
+      console.error('Payment failed:', err);
+      notification('error');
+    }
   };
 
   const renderBanner = () => {
@@ -72,7 +61,12 @@ export default function ChatWindow({ orderId }) {
             Stars are held securely until you confirm delivery.
           </p>
           <div className={styles.bannerActions}>
-            <Button variant="primary" size="sm" onClick={handlePay}>
+            <Button 
+              variant="primary" 
+              size="sm" 
+              onClick={handlePay}
+              loading={paymentStatus === 'pending'}
+            >
               Pay Now
             </Button>
           </div>
@@ -85,13 +79,8 @@ export default function ChatWindow({ orderId }) {
         <div className={[styles.orderBanner, styles.bannerPaid].join(' ')}>
           <div className={styles.bannerTitle}>⏳ Waiting for delivery…</div>
           <p className={styles.bannerSub}>
-            Once you receive the account details, click Confirm to release payment.
+            Once you receive the account details, click Confirm in the header to release payment.
           </p>
-          <div className={styles.bannerActions}>
-            <Button variant="primary" size="sm" onClick={handleConfirm}>
-              Confirm Order
-            </Button>
-          </div>
         </div>
       );
     }
