@@ -7,9 +7,9 @@ import { mockProducts, mockPurchaseHistory } from './mockData';
  */
 export const USE_MOCK = false;
 
-// In dev: Vite proxy forwards /api/* → http://localhost:4000 (no CORS issues)
-// In prod: set VITE_API_URL to your deployed backend, e.g. https://your-api.onrender.com
-const BASE_URL = "https://back-mrkt.onrender.com"
+// Dev: Vite proxy forwards /api/* → localhost:4000
+// Prod: VITE_API_URL must be set to the Render backend URL in Vercel env vars
+const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'https://back-mrkt.onrender.com';
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
@@ -54,7 +54,8 @@ function resolveAccessToken() {
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  // Render free tier cold-starts take up to 50s — give it 60s
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
