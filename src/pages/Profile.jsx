@@ -1,11 +1,12 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { useUserStore, usePaymentStore, useSellerStore, useOrderStore } from '../store';
+import { useUserStore } from '../store';
 import { useBalance, useMyLots, usePurchaseHistory } from '../hooks';
 import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
 import styles from './Profile.module.css';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const user = useUserStore((s) => s.user);
   const { balance, loading: balanceLoading } = useBalance();
   const { data: lotsData } = useMyLots();
   const myLots = lotsData || [];

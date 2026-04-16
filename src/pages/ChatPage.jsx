@@ -9,7 +9,7 @@ import styles from './ChatPage.module.css';
 export default function ChatPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { order, isLoading, error, refresh } = useOrder(orderId);
+  const { order, loading, error, refresh } = useOrder(orderId);
   const [supportOpen, setSupportOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { impact, notification } = useHaptic();
@@ -41,7 +41,7 @@ export default function ChatPage() {
 
   const status = order ? statusLabel[order.status] : null;
 
-  if (isLoading) return <div className={styles.page}><Skeleton height={60} /></div>;
+  if (loading) return <div className={styles.page}><Skeleton height={60} /></div>;
   if (error) return <div className={styles.page}>{error}</div>;
 
   return (

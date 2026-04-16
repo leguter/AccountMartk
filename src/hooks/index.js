@@ -1,6 +1,35 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { productService, paymentService } from '../services/api';
-import { useMarketplaceStore, usePaymentStore } from '../store';
+import { productService, paymentService, chatService, balanceService } from '../services/api';
+import { useMarketplaceStore, usePaymentStore, useUserStore } from '../store';
+import axios from 'axios';
+
+const _api = axios.create({
+  baseURL: (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'http://localhost:4000',
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
+});
+_api.interceptors.request.use((config) => {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (initData) config.headers['X-Telegram-Init-Data'] = initData;
+  const token = (() => {
+    try {
+      const raw = localStorage.getItem('accountmark-user');
+      return raw ? JSON.parse(raw)?.state?.accessToken : null;
+    } catch { return null; }
+  })();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+_api.interceptors.response.use(
+  (res) => res.data,
+  (err) => {
+    const body = err.response?.data;
+    const message = (typeof body?.message === 'string' && body.message) ||
+      (typeof body?.error === 'string' && body.error) ||
+      err.message || 'Unknown error';
+    return Promise.reject(new Error(message));
+  }
+);
 
 // Generic async hook
 export function useAsync(asyncFn, deps = []) {
@@ -76,8 +105,8 @@ export function useProduct(id) {
 }
 
 // Purchase history
-export function usePurchaseHistory(userId) {
-  return useAsync(() => paymentService.getPurchaseHistory(userId), [userId]);
+export function usePurchaseHistory() {
+  return useAsync(() => paymentService.getPurchaseHistory(), []);
 }
 
 // Payment flow
@@ -91,24 +120,19 @@ export function usePayment() {
     setPaymentError(null);
 
     try {
-      // 1. Create invoice on backend
+      // 1. Create order + invoice on backend
       const { invoiceUrl, invoiceId } = await paymentService.createInvoice(product.id);
 
-      // 2. Check if Telegram is available
+      // 2. Trigger Telegram Stars payment if in TG environment
       const tg = window.Telegram?.WebApp;
-
       if (tg && tg.openInvoice) {
-        // Real Telegram Stars payment
         await paymentService.triggerStarsPayment(invoiceUrl);
       } else {
-        // Dev/mock mode — simulate payment
-        await new Promise((r) => setTimeout(r, 1500));
+        // Dev/browser — simulate the payment delay
+        await new Promise((r) => setTimeout(r, 800));
       }
 
-      // 3. Verify on backend
-      await paymentService.verifyPayment(invoiceId);
-
-      // 4. Success
+      // 3. Success — backend will process via webhook
       addPurchase({
         id: invoiceId,
         productId: product.id,
@@ -118,13 +142,15 @@ export function usePayment() {
         status: 'pending_confirmation',
       });
 
+      setPaymentStatus('success');
       return invoiceId;
 
     } catch (err) {
       setPaymentStatus('error');
       setPaymentError(err.message || 'Payment failed');
+      throw err;
     }
-  }, []);
+  }, [setPaymentStatus, setPaymentError, addPurchase]);
 
   return { purchase, paymentStatus, paymentError, resetPayment };
 }
@@ -210,7 +236,7 @@ export function useOrder(orderId) {
     if (!orderId) return;
     setLoading(true);
     try {
-      const res = await api.get(`/api/orders/${orderId}`);
+      const res = await _api.get(`/api/orders/${orderId}`);
       setOrder(res.order);
       setError(null);
     } catch (err) {
