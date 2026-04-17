@@ -82,33 +82,55 @@ export const useUserStore = create(
 
         if (initData) {
           try {
+            console.log('Authenticating with Telegram initData...');
             const res = await authService.loginWithTelegram(initData);
-            const u = res.user;
-            setApiAccessToken(res.token);
-            set({
-              user: {
-                id: u.id,
-                username: u.username ?? null,
-                first_name: u.firstName,
-                last_name: '',
-                photo_url: null,
-                language_code: 'en',
-              },
-              initData,
-              accessToken: res.token,
-              isAuthenticated: true,
-              isLoading: false,
-            });
+            
+            if (res && res.token && res.user) {
+              const u = res.user;
+              setApiAccessToken(res.token);
+              set({
+                user: {
+                  id: u.id,
+                  username: u.username ?? null,
+                  first_name: u.firstName || u.first_name || '',
+                  last_name: u.lastName || u.last_name || '',
+                  photo_url: u.photoUrl || u.photo_url || null,
+                  language_code: u.languageCode || 'en',
+                },
+                initData,
+                accessToken: res.token,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+              console.log('Telegram auth successful');
+            } else {
+              throw new Error('Invalid response format from auth service');
+            }
           } catch (e) {
-            console.warn('Telegram auth failed:', e);
-            setApiAccessToken(null);
-            set({
-              user: null,
-              initData,
-              accessToken: null,
-              isAuthenticated: false,
-              isLoading: false,
-            });
+            console.error('Telegram auth failed:', e);
+            
+            // Fallback to persistence if we have a saved session
+            const { accessToken, user } = readPersistedUserSlice();
+            if (accessToken) {
+              console.log('Falling back to persisted session');
+              setApiAccessToken(accessToken);
+              set({
+                user,
+                accessToken,
+                initData,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+            } else {
+              setApiAccessToken(null);
+              set({
+                user: null,
+                initData,
+                accessToken: null,
+                isAuthenticated: false,
+                isLoading: false,
+              });
+            }
           }
           return tg;
         }
