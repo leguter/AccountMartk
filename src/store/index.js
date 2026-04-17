@@ -82,6 +82,14 @@ export const useUserStore = create(
 
         if (initData) {
           // Render free tier cold-starts can take 60-120s.
+          // Fire a quick ping first to wake the server up, then retry auth.
+          console.log('Pinging server to wake up Render...');
+          try {
+            await api.get('/api/lots', { timeout: 120000 });
+          } catch {
+            // Ignore — just waking the server up
+          }
+
           // Retry up to 3 times so the app succeeds once the server wakes up.
           const MAX_RETRIES = 3;
           let lastError = null;
