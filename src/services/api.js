@@ -9,7 +9,7 @@ export const USE_MOCK = false;
 
 // Dev: Vite proxy forwards /api/* → localhost:4000
 // Prod: VITE_API_URL must be set in the deployment environment (e.g. Vercel)
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = "https://back-mrkt.onrender.com";
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
