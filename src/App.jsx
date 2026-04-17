@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect, Component } from 'react';
+import { useEffect, useState, Component } from 'react';
 import { useUserStore } from './store';
 import BottomNav from './components/layout/BottomNav';
 import Marketplace from './pages/Marketplace';
@@ -16,12 +16,20 @@ function AppInner() {
   const location = useLocation();
   const { initTelegram, isLoading } = useUserStore();
 
+  const [slowLoad, setSlowLoad] = useState(false);
+
   useEffect(() => {
     void initTelegram();
   }, [initTelegram]);
 
+  useEffect(() => {
+    if (!isLoading) return;
+    const t = setTimeout(() => setSlowLoad(true), 8000);
+    return () => clearTimeout(t);
+  }, [isLoading]);
+
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen slow={slowLoad} />;
   }
 
   return (
@@ -86,7 +94,7 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
-function LoadingScreen() {
+function LoadingScreen({ slow }) {
   return (
     <div className={styles.loadingScreen}>
       <div className={styles.loadingLogo}>
@@ -98,6 +106,18 @@ function LoadingScreen() {
       <div className={styles.loadingDots}>
         <span /><span /><span />
       </div>
+      {slow && (
+        <p style={{
+          marginTop: 16,
+          fontSize: 12,
+          color: 'var(--gray-3)',
+          textAlign: 'center',
+          padding: '0 32px',
+          lineHeight: 1.5,
+        }}>
+          Server is waking up…<br/>This takes up to 2 minutes on first launch.
+        </p>
+      )}
     </div>
   );
 }

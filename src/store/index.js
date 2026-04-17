@@ -81,56 +81,70 @@ export const useUserStore = create(
         }
 
         if (initData) {
-          try {
-            console.log('Authenticating with Telegram initData...');
-            const res = await authService.loginWithTelegram(initData);
-            
-            if (res && res.token && res.user) {
-              const u = res.user;
-              setApiAccessToken(res.token);
-              set({
-                user: {
-                  id: u.id,
-                  username: u.username ?? null,
-                  first_name: u.firstName || u.first_name || '',
-                  last_name: u.lastName || u.last_name || '',
-                  photo_url: u.photoUrl || u.photo_url || null,
-                  language_code: u.languageCode || 'en',
-                },
-                initData,
-                accessToken: res.token,
-                isAuthenticated: true,
-                isLoading: false,
-              });
-              console.log('Telegram auth successful');
-            } else {
-              throw new Error('Invalid response format from auth service');
+          // Render free tier cold-starts can take 60-120s.
+          // Retry up to 3 times so the app succeeds once the server wakes up.
+          const MAX_RETRIES = 3;
+          let lastError = null;
+
+          for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+              console.log(`Auth attempt ${attempt}/${MAX_RETRIES}...`);
+              const res = await authService.loginWithTelegram(initData);
+
+              if (res && res.token && res.user) {
+                const u = res.user;
+                setApiAccessToken(res.token);
+                set({
+                  user: {
+                    id: u.id,
+                    username: u.username ?? null,
+                    first_name: u.firstName || u.first_name || '',
+                    last_name: u.lastName || u.last_name || '',
+                    photo_url: u.photoUrl || u.photo_url || null,
+                    language_code: u.languageCode || 'en',
+                  },
+                  initData,
+                  accessToken: res.token,
+                  isAuthenticated: true,
+                  isLoading: false,
+                });
+                console.log('Telegram auth successful');
+                return tg;
+              } else {
+                throw new Error('Invalid response format from auth service');
+              }
+            } catch (e) {
+              lastError = e;
+              console.warn(`Auth attempt ${attempt} failed:`, e.message);
+              if (attempt < MAX_RETRIES) {
+                // Wait 5s before retrying (server is waking up)
+                await new Promise((r) => setTimeout(r, 5000));
+              }
             }
-          } catch (e) {
-            console.error('Telegram auth failed:', e);
-            
-            // Fallback to persistence if we have a saved session
-            const { accessToken, user } = readPersistedUserSlice();
-            if (accessToken) {
-              console.log('Falling back to persisted session');
-              setApiAccessToken(accessToken);
-              set({
-                user,
-                accessToken,
-                initData,
-                isAuthenticated: true,
-                isLoading: false,
-              });
-            } else {
-              setApiAccessToken(null);
-              set({
-                user: null,
-                initData,
-                accessToken: null,
-                isAuthenticated: false,
-                isLoading: false,
-              });
-            }
+          }
+
+          // All attempts failed — try persisted session as fallback
+          console.error('All auth attempts failed. Last error:', lastError);
+          const { accessToken, user } = readPersistedUserSlice();
+          if (accessToken) {
+            console.log('Falling back to persisted session');
+            setApiAccessToken(accessToken);
+            set({
+              user,
+              accessToken,
+              initData,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } else {
+            setApiAccessToken(null);
+            set({
+              user: null,
+              initData,
+              accessToken: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
           }
           return tg;
         }
