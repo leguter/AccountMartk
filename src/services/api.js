@@ -7,9 +7,9 @@ import { mockProducts, mockPurchaseHistory } from './mockData';
  */
 export const USE_MOCK = false;
 
-// Dev: Vite proxy forwards /api/* → localhost:4000
+// Dev: Vite proxy forwards /api/*
 // Prod: VITE_API_URL must be set in the deployment environment (e.g. Vercel)
-const BASE_URL = "https://back-mrkt.onrender.com";
+export const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
