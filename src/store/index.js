@@ -17,10 +17,12 @@ export const useUserStore = create(
       accessToken: null,
       isAuthenticated: false,
       isLoading: true,
+      error: null,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setInitData: (initData) => set({ initData }),
       setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
 
       logout: () => {
         setApiAccessToken(null);
@@ -33,6 +35,7 @@ export const useUserStore = create(
       },
 
       initTelegram: async () => {
+        set({ error: null });
         const tg = window.Telegram?.WebApp;
         if (!tg) {
           console.warn('Telegram WebApp not available');
@@ -134,6 +137,14 @@ export const useUserStore = create(
           // All attempts failed — try persisted session as fallback
           console.error('All auth attempts failed. Last error:', lastError);
           const { accessToken, user } = readPersistedUserSlice();
+          
+          let displayError = lastError?.message || String(lastError);
+          if (displayError.includes('net::ERR_NAME_NOT_RESOLVED')) {
+            displayError = 'DNS Error: Backend URL could not be resolved. Please check BASE_URL in api.js.';
+          } else if (displayError.includes('timeout')) {
+            displayError = 'Connection Timeout: The server took too long to respond. Render free tier might be sleeping.';
+          }
+
           if (accessToken) {
             console.log('Falling back to persisted session');
             setApiAccessToken(accessToken);
@@ -143,6 +154,7 @@ export const useUserStore = create(
               initData,
               isAuthenticated: true,
               isLoading: false,
+              error: displayError // Keep error but allow app to continue
             });
           } else {
             setApiAccessToken(null);
@@ -152,6 +164,7 @@ export const useUserStore = create(
               accessToken: null,
               isAuthenticated: false,
               isLoading: false,
+              error: displayError
             });
           }
           return tg;

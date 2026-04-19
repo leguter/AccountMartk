@@ -14,7 +14,7 @@ import styles from './App.module.css';
 
 function AppInner() {
   const location = useLocation();
-  const { initTelegram, isLoading } = useUserStore();
+  const { initTelegram, isLoading, error } = useUserStore();
 
   const [slowLoad, setSlowLoad] = useState(false);
 
@@ -28,8 +28,8 @@ function AppInner() {
     return () => clearTimeout(t);
   }, [isLoading]);
 
-  if (isLoading) {
-    return <LoadingScreen slow={slowLoad} />;
+  if (isLoading || error) {
+    return <LoadingScreen slow={slowLoad} error={error} />;
   }
 
   return (
@@ -94,7 +94,9 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
-function LoadingScreen({ slow }) {
+function LoadingScreen({ slow, error }) {
+  const { initTelegram } = useUserStore();
+
   return (
     <div className={styles.loadingScreen}>
       <div className={styles.loadingLogo}>
@@ -103,10 +105,46 @@ function LoadingScreen({ slow }) {
         </svg>
         <span className={styles.loadingBrand}>AccountMark</span>
       </div>
-      <div className={styles.loadingDots}>
-        <span /><span /><span />
-      </div>
-      {slow && (
+      
+      {!error && (
+        <div className={styles.loadingDots}>
+          <span /><span /><span />
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          marginTop: 24,
+          padding: '16px',
+          borderRadius: '12px',
+          background: 'rgba(255, 69, 58, 0.1)',
+          border: '1px solid rgba(255, 69, 58, 0.2)',
+          color: '#ff453a',
+          fontSize: '13px',
+          textAlign: 'center',
+          maxWidth: '280px'
+        }}>
+          <p style={{ fontWeight: 600, marginBottom: '8px' }}>Connection Error</p>
+          <p style={{ opacity: 0.8, marginBottom: '16px' }}>{error}</p>
+          <button 
+            onClick={() => initTelegram()}
+            style={{
+              background: '#ff453a',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
+      {slow && !error && (
         <p style={{
           marginTop: 16,
           fontSize: 12,
