@@ -41,8 +41,8 @@ export default function ChatPage() {
 
   const status = order ? statusLabel[order.status] : null;
 
-  if (loading) return <div className={styles.page}><Skeleton height={60} /></div>;
-  if (error) return <div className={styles.page}>{error}</div>;
+  if (loading && !order) return <div className={styles.page}><Skeleton height={60} /></div>;
+  if (error && !order) return <div className={styles.page}>{error}</div>;
 
   return (
     <div className={styles.page}>

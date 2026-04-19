@@ -213,12 +213,15 @@ export function useOrder(orderId) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const hasDataRef = useRef(false);
 
   const fetchOrder = useCallback(async () => {
     if (!orderId) return;
-    setLoading(true);
+    // Only show loading spinner on first fetch — not on background polls
+    if (!hasDataRef.current) setLoading(true);
     try {
       const res = await api.get(`/api/orders/${orderId}`);
+      hasDataRef.current = true;
       setOrder(res.order);
       setError(null);
     } catch (err) {
