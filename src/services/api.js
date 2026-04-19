@@ -9,7 +9,7 @@ export const USE_MOCK = false;
 
 // Dev: Vite proxy forwards /api/*
 // Prod: VITE_API_URL must be set in the deployment environment (e.g. Vercel)
-export const BASE_URL = import.meta.env.VITE_API_URL || 'https://back-mrkt.onrender.com';
+export const BASE_URL = import.meta.env.VITE_API_URL || 'https://back-mrkt1111111main.onrender.com';
 
 export const USER_PERSIST_KEY = 'accountmark-user';
 
@@ -151,13 +151,7 @@ export const productService = {
       await delay(700);
       return { success: true, data: mockProducts };
     }
-    try {
-      await api.get('/api/lots', { timeout: 120000 });
-      console.log('Server wake-up ping successful!');
-    } catch (e) {
-      console.warn('Wake-up ping failed (server still sleeping):', e.message);
-    }
-    const r = await api.get('/api/lots');
+    const r = await api.get('/api/lots', { timeout: 120000 });
     const raw = Array.isArray(r.lots) ? r.lots : [];
     const available = raw.filter((p) => !p.isSold);
     const data = available.map(normalizeProduct);

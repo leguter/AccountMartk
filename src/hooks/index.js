@@ -171,7 +171,7 @@ export function useChat(orderId) {
   const sendMessage = async (text) => {
     try {
       const res = await chatService.sendMessage(orderId, text);
-      setMessages((prev) => [...prev, res.data]);
+      setMessages((prev) => [...prev, res.message]);
       return res.data;
     } catch (err) {
       throw err;

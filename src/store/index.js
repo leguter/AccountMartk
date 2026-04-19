@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import {
+import api, {
   USE_MOCK,
   authService,
   setApiAccessToken,
