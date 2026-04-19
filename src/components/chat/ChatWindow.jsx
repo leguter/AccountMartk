@@ -53,6 +53,9 @@ export default function ChatWindow({ order, refresh }) {
         await new Promise((r) => setTimeout(r, 800));
       }
       notification('success');
+      // Poll order status for up to 10s so the UI reflects the webhook update
+      const poll = setInterval(() => { refresh(); }, 1500);
+      setTimeout(() => clearInterval(poll), 10000);
       refresh();
     } catch (err) {
       console.error('Payment failed:', err);

@@ -10,10 +10,12 @@ export default function ProfileBalancePage() {
   const navigate = useNavigate();
   const { balance, pendingBalance, loading: balanceLoading, refresh: refreshBalance } = useBalance();
   const { data: lotsData, loading: lotsLoading } = useMyLots();
-  const lots = lotsData || [];
+  const lots = Array.isArray(lotsData) ? lotsData : [];
 
   const { data: ordersData, loading: ordersLoading } = usePurchaseHistory();
-  const activeOrders = ordersData ? ordersData.filter(o => o.status !== 'completed') : [];
+  const rawOrders = Array.isArray(ordersData) ? ordersData : [];
+  // Seller dashboard shows orders where this user is the seller
+  const activeOrders = rawOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
 
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawMsg, setWithdrawMsg] = useState(null);
@@ -124,15 +126,13 @@ export default function ProfileBalancePage() {
                   className={styles.orderCard}
                 >
                   <div className={styles.orderCardLeft}>
-                    <div className={styles.orderTitle}>{order.productTitle || 'Lot'}</div>
-                    <div className={styles.orderDate}>{formatDate(order.date)}</div>
+                    <div className={styles.orderTitle}>{order.lot?.title || 'Order'}</div>
+                    <div className={styles.orderDate}>{formatDate(order.createdAt)}</div>
                   </div>
                   <div className={styles.orderCardRight}>
-                    <StarsPrice amount={order.price} size="sm" />
-                    <span
-                      className={styles.orderStatus}
-                    >
-                      {order.status === 'pending_confirmation' ? 'In escrow' : order.status}
+                    <StarsPrice amount={order.amount} size="sm" />
+                    <span className={styles.orderStatus}>
+                      {order.status === 'paid' ? 'In escrow' : order.status}
                     </span>
                   </div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">

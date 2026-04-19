@@ -32,7 +32,7 @@ export default function Profile() {
   const { balance, loading: balanceLoading } = useBalance();
 
   const { data: lotsData } = useMyLots();
-  const myLots = Array.isArray(lotsData) ? lotsData : (lotsData?.lots || []);
+  const myLots = Array.isArray(lotsData) ? lotsData : [];
 
   const { data: fetchedOrders, loading: ordersLoading } = useMyOrders();
   const allOrders = Array.isArray(fetchedOrders) ? fetchedOrders : [];

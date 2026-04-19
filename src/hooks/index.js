@@ -80,7 +80,10 @@ export function useProduct(id) {
 }
 
 export function useMyOrders() {
-  return useAsync(() => paymentService.getPurchaseHistory(), []);
+  return useAsync(async () => {
+    const res = await paymentService.getPurchaseHistory();
+    return Array.isArray(res.data) ? res.data : [];
+  }, []);
 }
 
 export function usePurchaseHistory() {
@@ -235,7 +238,11 @@ export function useOrder(orderId) {
 // Current user's lots
 export function useMyLots() {
   const user = useUserStore((s) => s.user);
-  return useAsync(() => productService.getMyLots(user?.id), [user?.id]);
+  return useAsync(async () => {
+    if (!user?.id) return [];
+    const res = await productService.getMyLots(user.id);
+    return Array.isArray(res.data) ? res.data : [];
+  }, [user?.id]);
 }
 
 // Telegram haptics
