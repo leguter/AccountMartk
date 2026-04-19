@@ -79,9 +79,12 @@ export function useProduct(id) {
   return { product: selectedProduct?.id == id ? selectedProduct : null, isLoading, error };
 }
 
-// Purchase history
-export function usePurchaseHistory() {
+export function useMyOrders() {
   return useAsync(() => paymentService.getPurchaseHistory(), []);
+}
+
+export function usePurchaseHistory() {
+  return useMyOrders();
 }
 
 // Payment flow

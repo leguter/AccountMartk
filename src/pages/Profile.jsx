@@ -1,35 +1,47 @@
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserStore } from '../store';
-import { useBalance, useMyLots, usePurchaseHistory } from '../hooks';
+import { useBalance, useMyLots, useMyOrders } from '../hooks';
 import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
 import styles from './Profile.module.css';
+
+const STATUS_LABELS = {
+  pending: 'Chatting',
+  paid: 'In Escrow',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+const STATUS_CSS = {
+  pending: styles['status--pending'],
+  paid: styles['status--paid'],
+  completed: styles['status--completed'],
+  cancelled: styles['status--error'],
+};
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function Profile() {
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
-  
-  // 1. Захищаємо отримання балансу
+  const [ordersTab, setOrdersTab] = useState('purchases');
+
   const { balance, loading: balanceLoading } = useBalance();
 
-  // 2. Захищаємо My Lots (забезпечуємо, що це завжди масив)
   const { data: lotsData } = useMyLots();
   const myLots = Array.isArray(lotsData) ? lotsData : (lotsData?.lots || []);
 
-  
-  // 3. Захищаємо Історію покупок
-  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory();
-  // Робимо перевірку: якщо fetchedHistory не масив, шукаємо всередині або ставимо []
-  const uniqueHistory = Array.isArray(fetchedHistory) ? fetchedHistory : [];
-  
-  // 4. Безпечний фільтр (тепер uniqueHistory точно масив)
-  const activeOrdersCount = uniqueHistory.filter(o => o && o.status !== 'completed').length;
+  const { data: fetchedOrders, loading: ordersLoading } = useMyOrders();
+  const allOrders = Array.isArray(fetchedOrders) ? fetchedOrders : [];
 
-  // 5. Безпечний reduce
-  const totalSpent = uniqueHistory.reduce((acc, p) => acc + (p?.price || 0), 0);
+  const purchases = allOrders.filter((o) => String(o.buyerId) === String(user?.id));
+  const sales = allOrders.filter((o) => String(o.sellerId) === String(user?.id));
 
-  // ... (решта логіки formatDate та getStatusColor)
+  const activeOrdersCount = allOrders.filter((o) => o && o.status !== 'completed' && o.status !== 'cancelled').length;
 
-  // 6. Додаємо перевірку на завантаження або відсутність юзера на початку рендеру
   if (!user) {
     return (
       <div className={styles.page}>
@@ -40,14 +52,34 @@ export default function Profile() {
     );
   }
 
+  const renderOrderItem = (item) => {
+    const lot = item.lot;
+    const icon = lot?.category ? ({ telegram: '✈️', instagram: '📸', youtube: '▶️', tiktok: '🎵', phone: '📱' }[lot.category] || '📦') : '📦';
+    return (
+      <div key={item.id} className={styles.historyItem} onClick={() => navigate(`/chat/${item.id}`)} style={{ cursor: 'pointer' }}>
+        <div className={styles.historyIcon}>{icon}</div>
+        <div className={styles.historyInfo}>
+          <div className={styles.historyTitle}>{lot?.title || 'Order #' + item.id}</div>
+          <div className={styles.historyDate}>{formatDate(item.createdAt)}</div>
+        </div>
+        <div className={styles.historyRight}>
+          {lot?.price != null && <StarsPrice amount={lot.price} size="sm" />}
+          <span className={[styles.statusBadge, STATUS_CSS[item.status] || ''].join(' ')}>
+            {STATUS_LABELS[item.status] || item.status}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const activeList = ordersTab === 'purchases' ? purchases : sales;
+
   return (
     <div className={styles.page}>
-      {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>Profile</h1>
       </div>
 
-      {/* User card */}
       <div className={styles.userCard}>
         <div className={styles.userCardInner}>
           <Avatar
@@ -78,34 +110,49 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className={styles.statsRow}>
         <div className={styles.statBox}>
-          <span className={styles.statBoxValue}>{uniqueHistory.length}</span>
+          <span className={styles.statBoxValue}>{purchases.length}</span>
           <span className={styles.statBoxLabel}>Purchases</span>
         </div>
         <div className={styles.statBoxDivider} />
         <div className={styles.statBox}>
-          <StarsPrice amount={totalSpent} size="md" />
-          <span className={styles.statBoxLabel}>Stars Spent</span>
+          <span className={styles.statBoxValue}>{sales.length}</span>
+          <span className={styles.statBoxLabel}>Sales</span>
         </div>
         <div className={styles.statBoxDivider} />
         <div className={styles.statBox}>
-          <span className={styles.statBoxValue}>2024</span>
-          <span className={styles.statBoxLabel}>Member Since</span>
+          <span className={styles.statBoxValue}>{myLots.length}</span>
+          <span className={styles.statBoxLabel}>Listings</span>
         </div>
       </div>
 
-      {/* Purchase History */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Purchase History</h2>
-          {uniqueHistory.length > 0 && (
-            <span className={styles.sectionCount}>{uniqueHistory.length}</span>
+          <h2 className={styles.sectionTitle}>Orders</h2>
+          {activeOrdersCount > 0 && (
+            <span className={styles.sectionCount}>{activeOrdersCount} active</span>
           )}
         </div>
 
-        {historyLoading ? (
+        <div className={styles.tabRow}>
+          <button
+            className={[styles.tab, ordersTab === 'purchases' ? styles.tabActive : ''].join(' ')}
+            onClick={() => setOrdersTab('purchases')}
+          >
+            My Purchases
+            {purchases.length > 0 && <span className={styles.tabBadge}>{purchases.length}</span>}
+          </button>
+          <button
+            className={[styles.tab, ordersTab === 'sales' ? styles.tabActive : ''].join(' ')}
+            onClick={() => setOrdersTab('sales')}
+          >
+            My Sales
+            {sales.length > 0 && <span className={styles.tabBadge}>{sales.length}</span>}
+          </button>
+        </div>
+
+        {ordersLoading ? (
           <div className={styles.historyList}>
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className={styles.historyItem}>
@@ -118,37 +165,19 @@ export default function Profile() {
               </div>
             ))}
           </div>
-        ) : uniqueHistory.length === 0 ? (
+        ) : activeList.length === 0 ? (
           <EmptyState
-            icon="🛒"
-            title="No purchases yet"
-            description="Browse the marketplace and find your first account"
+            icon={ordersTab === 'purchases' ? '🛒' : '🏪'}
+            title={ordersTab === 'purchases' ? 'No purchases yet' : 'No sales yet'}
+            description={ordersTab === 'purchases' ? 'Browse the marketplace and find your first account' : 'Create a listing to start selling'}
           />
         ) : (
           <div className={styles.historyList}>
-            {uniqueHistory.map((item) => (
-              <div key={item.id} className={styles.historyItem}>
-                <div className={styles.historyIcon}>
-                  {item.productTitle?.startsWith('@') ? '✈️' :
-                   item.productTitle?.startsWith('+') ? '📱' : '📦'}
-                </div>
-                <div className={styles.historyInfo}>
-                  <div className={styles.historyTitle}>{item.productTitle}</div>
-                  <div className={styles.historyDate}>{formatDate(item.date)}</div>
-                </div>
-                <div className={styles.historyRight}>
-                  <StarsPrice amount={item.price} size="sm" />
-                  <span className={[styles.statusBadge, getStatusColor(item.status)].join(' ')}>
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+            {activeList.map(renderOrderItem)}
           </div>
         )}
       </div>
 
-      {/* Seller Dashboard */}
       <Link to="/profile/balance" className={styles.sellerCard}>
         <div className={styles.sellerCardLeft}>
           <div className={styles.sellerCardIcon}>🏪</div>
@@ -168,7 +197,6 @@ export default function Profile() {
         </div>
       </Link>
 
-      {/* Settings / Actions */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Settings</h2>
         <div className={styles.settingsList}>
@@ -201,7 +229,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* App info */}
       <div className={styles.appInfo}>
         <div className={styles.appLogo}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--yellow)' }}>

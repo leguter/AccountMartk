@@ -206,7 +206,10 @@ export const productService = {
 
 // ─── ORDERS + PAYMENTS (backend: order → createInvoiceLink) ──────────────────
 export const paymentService = {
-  /** Real: POST /api/orders then POST /api/payments/create */
+  async createOrder(lotId) {
+    return api.post('/api/orders', { lotId: String(lotId) });
+  },
+
   async createInvoice(lotId) {
     if (USE_MOCK) {
       await delay(600);
@@ -240,17 +243,7 @@ export const paymentService = {
     }
     const r = await api.get('/api/orders');
     const orders = Array.isArray(r.orders) ? r.orders : [];
-    const data = orders
-      .filter((o) => (o.status === 'paid' || o.status === 'completed') && o.lot)
-      .map((o) => ({
-        id: o.id,
-        productId: o.lotId,
-        productTitle: o.lot.title,
-        price: o.lot.price,
-        date: o.createdAt || new Date().toISOString(),
-        status: o.status === 'completed' ? 'completed' : 'pending_confirmation',
-      }));
-    return { success: true, data };
+    return { success: true, data: orders };
   },
 
   async triggerStarsPayment(invoiceUrl) {

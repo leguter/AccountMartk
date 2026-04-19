@@ -240,10 +240,62 @@
   color: var(--warning);
 }
 
+.status--paid {
+  background: rgba(59,130,246,0.15);
+  color: var(--info);
+}
+
 .status--error {
   background: rgba(239,68,68,0.15);
   color: var(--error);
 }
+
+/* ─── Order Tabs ──────────────────────────────────────────────── */
+.tabRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-3);
+  background: var(--black-4);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--white);
+  background: var(--black-3);
+}
+
+.tabActive {
+  color: var(--yellow);
+  background: var(--yellow-muted);
+  border-color: rgba(245, 197, 24, 0.25);
+}
+
+.tabBadge {
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+}
+
+.tabActive .tabBadge {
+  background: rgba(245, 197, 24, 0.2);
+}
+
 
 /* Settings */
 .settingsList {

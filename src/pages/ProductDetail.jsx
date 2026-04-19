@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useProduct, usePayment, useHaptic } from '../hooks';
+import { useProduct, useHaptic } from '../hooks';
+import { paymentService } from '../services/api';
 import { Button, Badge, StarsPrice, Skeleton, ErrorState, Avatar } from '../components/ui';
 import styles from './ProductDetail.module.css';
 
@@ -12,8 +13,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { product, isLoading, error } = useProduct(id);
-  const { purchase, paymentStatus } = usePayment();
-  const buying = paymentStatus === 'pending';
+  const [contacting, setContacting] = useState(false);
   const { impact } = useHaptic();
 
   const handleBack = () => {
@@ -21,17 +21,20 @@ export default function ProductDetail() {
     navigate(-1);
   };
 
-  const handleBuy = async () => {
+  const handleContact = async () => {
     if (!product) return;
     impact('medium');
-    
+    setContacting(true);
     try {
-      const orderId = await purchase(product);
+      const res = await paymentService.createOrder(product.id);
+      const orderId = res?.order?.id;
       if (orderId) {
         navigate(`/chat/${orderId}`);
       }
     } catch (err) {
-      console.error('Purchase failed:', err);
+      console.error('Contact seller failed:', err);
+    } finally {
+      setContacting(false);
     }
   };
 
@@ -190,15 +193,15 @@ export default function ProductDetail() {
         <Button
           variant="primary"
           size="lg"
-          onClick={handleBuy}
-          loading={buying}
+          onClick={handleContact}
+          loading={contacting}
           icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           }
         >
-          Buy Now
+          Contact Seller
         </Button>
       </div>
 
