@@ -15,6 +15,7 @@ export default function Profile() {
   const { data: lotsData } = useMyLots();
   const myLots = Array.isArray(lotsData) ? lotsData : (lotsData?.lots || []);
 
+  
   // 3. Захищаємо Історію покупок
   const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory();
   // Робимо перевірку: якщо fetchedHistory не масив, шукаємо всередині або ставимо []
