@@ -52,10 +52,13 @@ export default function ChatWindow({ order, refresh }) {
       } else {
         await new Promise((r) => setTimeout(r, 800));
       }
+      // Telegram confirmed payment — immediately update the backend
+      try {
+        await paymentService.manualConfirmPayment(order.id);
+      } catch (e) {
+        console.warn('Manual confirm (may already be paid):', e.message);
+      }
       notification('success');
-      // Poll order status for up to 10s so the UI reflects the webhook update
-      const poll = setInterval(() => { refresh(); }, 1500);
-      setTimeout(() => clearInterval(poll), 10000);
       refresh();
     } catch (err) {
       console.error('Payment failed:', err);

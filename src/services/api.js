@@ -229,6 +229,10 @@ export const paymentService = {
     return api.patch(`/api/orders/${orderId}/confirm`);
   },
 
+  async manualConfirmPayment(orderId) {
+    return api.post('/api/payments/manual-confirm', { orderId });
+  },
+
   async getPurchaseHistory() {
     if (USE_MOCK) {
       await delay(500);
