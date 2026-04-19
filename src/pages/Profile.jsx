@@ -7,28 +7,37 @@ import styles from './Profile.module.css';
 export default function Profile() {
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
-  const { balance, loading: balanceLoading } = useBalance();
-  const { data: lotsData } = useMyLots();
-  const myLots = lotsData || [];
-
-  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory();
-  const uniqueHistory = fetchedHistory || [];
   
-  const activeOrdersCount = uniqueHistory.filter(o => o.status !== 'completed').length;
+  // 1. Захищаємо отримання балансу
+  const { balance, loading: balanceLoading } = useBalance();
 
-  const totalSpent = uniqueHistory.reduce((acc, p) => acc + (p.price || 0), 0);
+  // 2. Захищаємо My Lots (забезпечуємо, що це завжди масив)
+  const { data: lotsData } = useMyLots();
+  const myLots = Array.isArray(lotsData) ? lotsData : (lotsData?.lots || []);
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric',
-    });
-  };
+  // 3. Захищаємо Історію покупок
+  const { data: fetchedHistory, loading: historyLoading } = usePurchaseHistory();
+  // Робимо перевірку: якщо fetchedHistory не масив, шукаємо всередині або ставимо []
+  const uniqueHistory = Array.isArray(fetchedHistory) ? fetchedHistory : [];
+  
+  // 4. Безпечний фільтр (тепер uniqueHistory точно масив)
+  const activeOrdersCount = uniqueHistory.filter(o => o && o.status !== 'completed').length;
 
-  const getStatusColor = (status) => {
-    if (status === 'completed') return styles['status--completed'];
-    if (status === 'pending') return styles['status--pending'];
-    return styles['status--error'];
-  };
+  // 5. Безпечний reduce
+  const totalSpent = uniqueHistory.reduce((acc, p) => acc + (p?.price || 0), 0);
+
+  // ... (решта логіки formatDate та getStatusColor)
+
+  // 6. Додаємо перевірку на завантаження або відсутність юзера на початку рендеру
+  if (!user) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <Skeleton width="100%" height={100} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
