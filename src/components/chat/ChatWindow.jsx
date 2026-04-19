@@ -45,7 +45,7 @@ export default function ChatWindow({ order, refresh }) {
     impact('medium');
     setPaying(true);
     try {
-      const { invoiceUrl } = await paymentService.createInvoice(order.lotId);
+      const { invoiceUrl } = await paymentService.createInvoice(order.id);
       const tg = window.Telegram?.WebApp;
       if (tg?.openInvoice) {
         await paymentService.triggerStarsPayment(invoiceUrl);

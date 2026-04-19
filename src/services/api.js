@@ -206,30 +206,23 @@ export const productService = {
 
 // ─── ORDERS + PAYMENTS (backend: order → createInvoiceLink) ──────────────────
 export const paymentService = {
-  async createOrder(lotId) {
-    return api.post('/api/orders', { lotId: String(lotId) });
+  async createOrder(productId) {
+    return api.post('/api/orders', { productId: String(productId) });
   },
 
-  async createInvoice(lotId) {
+  async createInvoice(orderId) {
     if (USE_MOCK) {
       await delay(600);
       return {
         success: true,
-        invoiceUrl: `https://t.me/invoice/mock_${lotId}_${Date.now()}`,
-        invoiceId: `inv_${Date.now()}`,
+        invoiceUrl: `https://t.me/invoice/mock_${orderId}_${Date.now()}`,
+        invoiceId: orderId,
       };
     }
-    const orderRes = await api.post('/api/orders', { lotId: String(lotId) });
-    const orderId = orderRes.order?.id;
-    if (!orderId) throw new Error('Could not create order');
     const payRes = await api.post('/api/payments/create', { orderId });
     const invoiceUrl = payRes.invoiceLink;
     if (!invoiceUrl) throw new Error('No invoice link from server');
-    return {
-      success: true,
-      invoiceUrl,
-      invoiceId: orderId,
-    };
+    return { success: true, invoiceUrl, invoiceId: orderId };
   },
 
   async confirmOrder(orderId) {

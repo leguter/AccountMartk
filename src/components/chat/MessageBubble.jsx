@@ -1,7 +1,7 @@
 import styles from './chat.module.css';
 
 export default function MessageBubble({ message, currentUserId }) {
-  const isMine = message.senderId === currentUserId;
+  const isMine = message.type !== 'system' && String(message.senderId) === String(currentUserId);
   const isSystem = message.type === 'system';
 
   const formatTime = (iso) => {

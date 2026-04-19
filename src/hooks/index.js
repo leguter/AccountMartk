@@ -156,7 +156,7 @@ export function useChat(orderId) {
     setLoading(true);
     try {
       const res = await chatService.getMessages(orderId);
-      setMessages(res.data);
+      setMessages(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -174,8 +174,9 @@ export function useChat(orderId) {
   const sendMessage = async (text) => {
     try {
       const res = await chatService.sendMessage(orderId, text);
-      setMessages((prev) => [...prev, res.message]);
-      return res.data;
+      if (res?.message) {
+        setMessages((prev) => [...prev, res.message]);
+      }
     } catch (err) {
       throw err;
     }
