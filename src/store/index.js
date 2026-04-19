@@ -89,8 +89,9 @@ export const useUserStore = create(
           console.log('Pinging server to wake up Render...');
           try {
             await api.get('/api/lots', { timeout: 120000 });
-          } catch {
-            // Ignore — just waking the server up
+            console.log('Server wake-up successful!');
+          } catch (e) {
+            console.warn('Server wake-up ping failed (still sleeping):', e.message);
           }
 
           // Retry up to 3 times so the app succeeds once the server wakes up.
