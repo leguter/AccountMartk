@@ -55,7 +55,7 @@ function resolveAccessToken() {
 const api = axios.create({
   baseURL: BASE_URL,
   // Render free tier cold-starts can take 60-120s — be patient
-  timeout: 120000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
