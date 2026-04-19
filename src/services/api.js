@@ -207,7 +207,7 @@ export const productService = {
 // ─── ORDERS + PAYMENTS (backend: order → createInvoiceLink) ──────────────────
 export const paymentService = {
   async createOrder(productId) {
-    return api.post('/api/orders', { productId: String(productId) });
+    return api.post('/api/orders', { lotId: String(productId) });
   },
 
   async createInvoice(orderId) {
