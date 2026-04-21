@@ -9,6 +9,7 @@ import Search from './pages/Search';
 import UserProfilePage from './pages/UserProfilePage';
 import CreateLotPage from './pages/CreateLotPage';
 import ChatPage from './pages/ChatPage';
+import ChatsPage from './pages/ChatsPage';
 import ProfileBalancePage from './pages/ProfileBalancePage';
 import styles from './App.module.css';
 
@@ -45,6 +46,7 @@ function AppInner() {
             <Route path="/profile/balance" element={<ProfileBalancePage />} />
             <Route path="/create-lot" element={<CreateLotPage />} />
             <Route path="/chat/:orderId" element={<ChatPage />} />
+            <Route path="/chats" element={<ChatsPage />} />
           </Routes>
         </ErrorBoundary>
       </main>

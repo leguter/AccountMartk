@@ -264,3 +264,36 @@ export function useHaptic() {
 
   return { impact, notification, selection };
 }
+
+// All user chats (buyer + seller), sorted by last message desc
+export function useChats() {
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchChats = useCallback(async () => {
+    try {
+      const res = await chatService.getUserChats();
+      const sorted = (res.data || []).sort((a, b) => {
+        const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      setChats(sorted);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchChats();
+    const timer = setInterval(fetchChats, 15000);
+    return () => clearInterval(timer);
+  }, [fetchChats]);
+
+  return { chats, loading, error, refresh: fetchChats };
+}
+

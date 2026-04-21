@@ -267,6 +267,12 @@ export const chatService = {
   async sendMessage(orderId, text) {
     return api.post(`/api/chat/${orderId}`, { text });
   },
+
+  /** Returns all chats (as orders) where the current user is buyer or seller. */
+  async getUserChats() {
+    const r = await api.get('/api/chats');
+    return { success: true, data: Array.isArray(r.chats) ? r.chats : [] };
+  },
 };
 
 // ─── BALANCE (backend: GET /api/balance, POST /api/withdraw) ─────────────────
