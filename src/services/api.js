@@ -273,6 +273,17 @@ export const chatService = {
     const r = await api.get('/api/chats');
     return { success: true, data: Array.isArray(r.chats) ? r.chats : [] };
   },
+
+  /** Mark current user as typing in this order. Fire-and-forget. */
+  async setTyping(orderId) {
+    return api.post(`/api/chat/${orderId}/typing`).catch(() => {});
+  },
+
+  /** Returns true if the other participant is currently typing. */
+  async getTyping(orderId) {
+    const r = await api.get(`/api/chat/${orderId}/typing`);
+    return r?.typing === true;
+  },
 };
 
 // ─── BALANCE (backend: GET /api/balance, POST /api/withdraw) ─────────────────

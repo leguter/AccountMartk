@@ -153,6 +153,7 @@ export function useChat(orderId) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [otherIsTyping, setOtherIsTyping] = useState(false);
 
   const fetchMessages = useCallback(async () => {
     if (!orderId) return;
@@ -167,12 +168,26 @@ export function useChat(orderId) {
     }
   }, [orderId]);
 
+  // Poll typing indicator every 2 s (lightweight — just a boolean)
+  const fetchTyping = useCallback(async () => {
+    if (!orderId) return;
+    try {
+      const typing = await chatService.getTyping(orderId);
+      setOtherIsTyping(typing);
+    } catch (_) {
+      // ignore — typing is best-effort
+    }
+  }, [orderId]);
+
   useEffect(() => {
     fetchMessages();
-    // Simple polling every 5s
-    const timer = setInterval(fetchMessages, 5000);
-    return () => clearInterval(timer);
-  }, [fetchMessages]);
+    const msgTimer = setInterval(fetchMessages, 5000);
+    const typingTimer = setInterval(fetchTyping, 2000);
+    return () => {
+      clearInterval(msgTimer);
+      clearInterval(typingTimer);
+    };
+  }, [fetchMessages, fetchTyping]);
 
   const sendMessage = async (text) => {
     try {
@@ -185,7 +200,13 @@ export function useChat(orderId) {
     }
   };
 
-  return { messages, loading, error, sendMessage, refresh: fetchMessages };
+  /** Call this whenever the user types a character in the input. */
+  const notifyTyping = useCallback(() => {
+    if (!orderId) return;
+    chatService.setTyping(orderId); // fire-and-forget
+  }, [orderId]);
+
+  return { messages, loading, error, otherIsTyping, sendMessage, notifyTyping, refresh: fetchMessages };
 }
 
 // User balance

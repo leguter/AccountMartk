@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import styles from './chat.module.css';
 
-export default function ChatInput({ onSend }) {
+export default function ChatInput({ onSend, onTyping }) {
   const [text, setText] = useState('');
+
+  const handleChange = (e) => {
+    setText(e.target.value);
+    // Notify parent that user is typing (debounce handled by the hook / server TTL)
+    onTyping?.();
+  };
 
   const handleSend = () => {
     const trimmed = text.trim();
@@ -23,7 +29,7 @@ export default function ChatInput({ onSend }) {
       <textarea
         className={styles.inputField}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={handleChange}
         onKeyDown={handleKey}
         placeholder="Type a message…"
         rows={1}

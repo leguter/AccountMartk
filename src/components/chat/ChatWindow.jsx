@@ -16,7 +16,7 @@ export default function ChatWindow({ order, refresh }) {
   const currentUserId = user?.id ?? 'demo_user';
   const orderId = order?.id;
 
-  const { messages, sendMessage } = useChat(orderId);
+  const { messages, sendMessage, otherIsTyping, notifyTyping } = useChat(orderId);
   const { impact, notification } = useHaptic();
   const [paying, setPaying] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -199,7 +199,17 @@ export default function ChatWindow({ order, refresh }) {
       </div>
 
       {renderBanner()}
-      <ChatInput onSend={handleSend} />
+
+      {/* Typing indicator */}
+      {otherIsTyping && (
+        <div className={styles.typingIndicator}>
+          <span className={styles.typingDot} />
+          <span className={styles.typingDot} />
+          <span className={styles.typingDot} />
+        </div>
+      )}
+
+      <ChatInput onSend={handleSend} onTyping={notifyTyping} />
     </div>
   );
 }
