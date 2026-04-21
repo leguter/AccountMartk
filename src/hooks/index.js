@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { productService, paymentService, chatService, balanceService } from '../services/api';
+import { productService, paymentService, chatService, balanceService, userService } from '../services/api';
 import { useMarketplaceStore, usePaymentStore, useUserStore } from '../store';
 
 // Re-use the correctly configured axios instance from services/api
@@ -318,3 +318,27 @@ export function useChats() {
   return { chats, loading, error, refresh: fetchChats };
 }
 
+// Seller / public user profile
+export function useSellerProfile(idOrUsername) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!idOrUsername) return;
+    setLoading(true);
+    setError(null);
+    userService
+      .getProfile(idOrUsername)
+      .then((data) => {
+        setUser(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [idOrUsername]);
+
+  return { user, loading, error };
+}

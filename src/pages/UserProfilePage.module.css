@@ -1,65 +1,218 @@
 .page {
-  min-height: 100vh;
-  background-color: var(--bg-color);
-  padding-bottom: 80px; /* Space for BottomNav */
+  min-height: 100dvh;
+  background: var(--black);
+  padding-bottom: 80px;
 }
 
+/* ─── Top bar ─────────────────────────────────────────────────── */
 .topBar {
   display: flex;
   align-items: center;
+  gap: 12px;
   padding: 12px 16px;
-  background: rgba(var(--bg-rgb), 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .topBarTitle {
   flex: 1;
   text-align: center;
   font-size: 17px;
-  font-weight: 600;
-  margin-right: 40px; /* Balance the back button */
+  font-weight: 700;
+  font-family: var(--font-display);
+  /* visually center despite back button */
+  margin-right: 40px;
 }
 
+/* ─── Content wrapper ────────────────────────────────────────── */
 .content {
-  padding: 0 16px;
+  padding: 0;
 }
 
+/* ─── Header (avatar / name / date) ─────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 16px 20px;
+  background: linear-gradient(180deg, var(--black-2) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--white);
+  margin: 10px 0 0;
+}
+
+.username {
+  font-size: 14px;
+  color: var(--gray-3);
+}
+
+.joinDate {
+  font-size: 12px;
+  color: var(--gray-2);
+  margin-top: 2px;
+}
+
+/* ─── Stats grid ─────────────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statItem:last-child {
+  border-right: none;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-3);
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────── */
 .tabs {
   display: flex;
-  background: var(--surface-light);
-  padding: 4px;
-  border-radius: 10px;
-  margin: 24px 0 16px;
+  padding: 12px 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 0;
 }
 
 .tab {
-  flex: 1;
-  border: none;
-  background: none;
-  padding: 8px;
+  flex: 0 0 auto;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
-  border-radius: 8px;
-  cursor: pointer;
+  color: var(--gray-3);
+  border-bottom: 2px solid transparent;
   transition: all 0.2s;
+  cursor: pointer;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .activeTab {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
 }
 
 .tabContent {
-  animation: fadeIn 0.3s ease-out;
+  padding: 16px;
+  animation: fadeIn 0.25s ease-out;
 }
 
+/* ─── Lot cards list ─────────────────────────────────────────── */
+.lotsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lotCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--black-2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.lotCard:hover {
+  background: var(--black-3);
+  border-color: rgba(245, 197, 24, 0.15);
+}
+
+.lotCard:active {
+  transform: scale(0.98);
+}
+
+.lotCardIcon {
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  background: var(--black-4);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lotCardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.lotCardTitle {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 3px;
+}
+
+.lotCardDesc {
+  font-size: 12px;
+  color: var(--gray-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lotCardPrice {
+  flex-shrink: 0;
+}
+
+/* ─── Empty lots ─────────────────────────────────────────────── */
+.emptyLots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: var(--gray-3);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ─── Animations ─────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

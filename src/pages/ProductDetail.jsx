@@ -169,7 +169,7 @@ export default function ProductDetail() {
       {product.seller && (
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Seller</h2>
-          <Link to={`/user/${product.seller.username}`} className={styles.sellerCard}>
+          <Link to={`/user/${product.seller.id}`} className={styles.sellerCard}>
             <Avatar name={product.seller.username} size={44} />
             <div className={styles.sellerInfo}>
               <div className={styles.sellerName}>@{product.seller.username}</div>

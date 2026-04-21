@@ -294,7 +294,15 @@ export const chatService = {
   },
 };
 
-// ─── BALANCE (backend: GET /api/balance, POST /api/withdraw) ─────────────────
+// ─── USER PROFILE (backend: GET /api/users/:id) ──────────────────────────────
+export const userService = {
+  /** Accepts either a numeric Telegram userId or a username string. */
+  async getProfile(idOrUsername) {
+    const r = await api.get(`/api/users/${idOrUsername}`);
+    return r.user ?? null;
+  },
+};
+
 export const balanceService = {
   async getBalance() {
     return api.get('/api/balance');
