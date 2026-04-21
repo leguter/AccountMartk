@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProduct, useHaptic } from '../hooks';
-import { paymentService } from '../services/api';
+import { paymentService, productService } from '../services/api';
+import { useUserStore } from '../store';
 import { Button, Badge, StarsPrice, Skeleton, ErrorState, Avatar } from '../components/ui';
 import styles from './ProductDetail.module.css';
 
@@ -14,11 +15,40 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { product, isLoading, error } = useProduct(id);
   const [contacting, setContacting] = useState(false);
-  const { impact } = useHaptic();
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const currentUser = useUserStore((s) => s.user);
+  const { impact, notification } = useHaptic();
+
+  const isOwner = !!(product && currentUser && String(product.userId ?? product.seller?.id) === String(currentUser.id));
 
   const handleBack = () => {
     impact('light');
     navigate(-1);
+  };
+
+  const handleEdit = () => {
+    impact('light');
+    navigate(`/create-lot?edit=${id}`);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+    impact('heavy');
+    setDeleting(true);
+    try {
+      await productService.deleteLot(id);
+      notification('success');
+      navigate('/');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      notification('error');
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   const handleContact = async () => {
@@ -181,28 +211,49 @@ export default function ProductDetail() {
 
       {/* Sticky CTA */}
       <div className={styles.ctaBar}>
-        <div className={styles.ctaPrice}>
-          <StarsPrice amount={product.price} size="lg" />
-          {product.originalPrice && (
-            <div className={styles.ctaDiscount}>
-              <StarsPrice amount={product.originalPrice} size="sm" strikethrough />
-              <span className={styles.discountPill}>-{discount}%</span>
+        {isOwner ? (
+          /* Owner: Edit + Delete */
+          <div className={styles.ownerActions}>
+            <Button variant="secondary" size="md" onClick={handleEdit} fullWidth>
+              ✏️ Edit Listing
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              onClick={handleDelete}
+              loading={deleting}
+              fullWidth
+            >
+              {confirmDelete ? '⚠️ Confirm Delete' : '🗑️ Delete'}
+            </Button>
+          </div>
+        ) : (
+          /* Buyer: price + contact */
+          <>
+            <div className={styles.ctaPrice}>
+              <StarsPrice amount={product.price} size="lg" />
+              {product.originalPrice && (
+                <div className={styles.ctaDiscount}>
+                  <StarsPrice amount={product.originalPrice} size="sm" strikethrough />
+                  <span className={styles.discountPill}>-{discount}%</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleContact}
-          loading={contacting}
-          icon={
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          }
-        >
-          Contact Seller
-        </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleContact}
+              loading={contacting}
+              icon={
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              }
+            >
+              Contact Seller
+            </Button>
+          </>
+        )}
       </div>
 
 

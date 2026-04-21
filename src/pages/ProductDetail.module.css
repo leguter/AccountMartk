@@ -344,3 +344,10 @@
   padding: 2px 6px;
   border-radius: var(--radius-full);
 }
+
+/* Owner: Edit + Delete buttons side by side in CTA bar */
+.ownerActions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}

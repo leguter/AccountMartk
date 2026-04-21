@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui';
 import styles from './CreateLotPage.module.css';
 import { productService } from '../services/api';
@@ -25,14 +25,40 @@ const INITIAL_FORM = {
 
 export default function CreateLotPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit'); // present when editing an existing lot
+
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingLot, setLoadingLot] = useState(!!editId);
   const [success, setSuccess] = useState(false);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (!editId) return;
+    setLoadingLot(true);
+    productService
+      .getById(editId)
+      .then((res) => {
+        const lot = res.data;
+        setForm((f) => ({
+          ...f,
+          title: lot.title ?? '',
+          description: lot.description ?? '',
+          price: String(lot.price ?? ''),
+          category: lot.category ?? 'telegram',
+        }));
+      })
+      .catch((err) => {
+        setErrors({ global: err.message });
+      })
+      .finally(() => setLoadingLot(false));
+  }, [editId]);
 
   const set = (field, value) => {
     setForm((f) => ({ ...f, [field]: value }));
-    setErrors((e) => ({ ...e, [field]: undefined }));
+    setErrors((e) => ({ ...e, [field]: undefined, global: undefined }));
   };
 
   const validate = () => {
@@ -55,33 +81,52 @@ export default function CreateLotPage() {
 
     setIsSubmitting(true);
 
-    try {
-      const lotData = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        price: Number(form.price),
-        category: form.category,
-        // Backend handles followers/stats in description or future expansion
-      };
+    const lotData = {
+      title: form.title.trim(),
+      description: form.description.trim(),
+      price: Number(form.price),
+      category: form.category,
+    };
 
-      await productService.createLot(lotData);
+    try {
+      if (editId) {
+        await productService.updateLot(editId, lotData);
+      } else {
+        await productService.createLot(lotData);
+      }
       setIsSubmitting(false);
       setSuccess(true);
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
-      console.error('Create lot failed:', err);
-      setErrors({ global: err.message });
+      const msg = err.message || 'Something went wrong';
+      // Surface profanity error clearly
+      const isProfanity =
+        msg.toLowerCase().includes('inappropriate') ||
+        msg.toLowerCase().includes('profanity');
+      setErrors({
+        global: isProfanity
+          ? 'Your listing contains prohibited words. Please revise the title or description.'
+          : msg,
+      });
       setIsSubmitting(false);
     }
   };
 
   const handleBack = () => navigate(-1);
 
+  if (loadingLot) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.loadingWrap}>Loading lot…</div>
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className={styles.successScreen}>
-        <div className={styles.successIcon}>🎉</div>
-        <h2 className={styles.successTitle}>Lot Created!</h2>
+        <div className={styles.successIcon}>{editId ? '✅' : '🎉'}</div>
+        <h2 className={styles.successTitle}>{editId ? 'Lot Updated!' : 'Lot Created!'}</h2>
         <p className={styles.successSub}>Redirecting to marketplace…</p>
       </div>
     );
@@ -95,10 +140,17 @@ export default function CreateLotPage() {
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <span className={styles.topBarTitle}>Create Listing</span>
+        <span className={styles.topBarTitle}>{editId ? 'Edit Listing' : 'Create Listing'}</span>
       </header>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
+        {/* Global error (includes profanity rejection) */}
+        {errors.global && (
+          <div className={styles.globalError}>
+            ⚠️ {errors.global}
+          </div>
+        )}
+
         {/* Category */}
         <div className={styles.field}>
           <label className={styles.label}>Category</label>
@@ -170,55 +222,59 @@ export default function CreateLotPage() {
           {errors.price && <span className={styles.error}>{errors.price}</span>}
         </div>
 
-        {/* Optional stats */}
-        <div className={styles.sectionLabel}>Account Details (optional)</div>
+        {/* Optional stats — only shown on create */}
+        {!editId && (
+          <>
+            <div className={styles.sectionLabel}>Account Details (optional)</div>
 
-        <div className={styles.rowFields}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="lot-followers">Followers</label>
-            <input
-              id="lot-followers"
-              className={styles.input}
-              type="number"
-              placeholder="e.g. 52000"
-              value={form.followers}
-              onChange={(e) => set('followers', e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="lot-age">Account Age</label>
-            <input
-              id="lot-age"
-              className={styles.input}
-              placeholder="e.g. 2 years"
-              value={form.age}
-              onChange={(e) => set('age', e.target.value)}
-            />
-          </div>
-        </div>
+            <div className={styles.rowFields}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="lot-followers">Followers</label>
+                <input
+                  id="lot-followers"
+                  className={styles.input}
+                  type="number"
+                  placeholder="e.g. 52000"
+                  value={form.followers}
+                  onChange={(e) => set('followers', e.target.value)}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="lot-age">Account Age</label>
+                <input
+                  id="lot-age"
+                  className={styles.input}
+                  placeholder="e.g. 2 years"
+                  value={form.age}
+                  onChange={(e) => set('age', e.target.value)}
+                />
+              </div>
+            </div>
 
-        <div className={styles.rowFields}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="lot-er">Engagement Rate</label>
-            <input
-              id="lot-er"
-              className={styles.input}
-              placeholder="e.g. 4.5%"
-              value={form.engagementRate}
-              onChange={(e) => set('engagementRate', e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="lot-country">Country</label>
-            <input
-              id="lot-country"
-              className={styles.input}
-              placeholder="e.g. USA"
-              value={form.country}
-              onChange={(e) => set('country', e.target.value)}
-            />
-          </div>
-        </div>
+            <div className={styles.rowFields}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="lot-er">Engagement Rate</label>
+                <input
+                  id="lot-er"
+                  className={styles.input}
+                  placeholder="e.g. 4.5%"
+                  value={form.engagementRate}
+                  onChange={(e) => set('engagementRate', e.target.value)}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="lot-country">Country</label>
+                <input
+                  id="lot-country"
+                  className={styles.input}
+                  placeholder="e.g. USA"
+                  value={form.country}
+                  onChange={(e) => set('country', e.target.value)}
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         <div className={styles.submitWrap}>
           <Button
@@ -228,7 +284,7 @@ export default function CreateLotPage() {
             fullWidth
             loading={isSubmitting}
           >
-            Publish Listing
+            {editId ? 'Save Changes' : 'Publish Listing'}
           </Button>
         </div>
       </form>

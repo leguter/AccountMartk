@@ -198,6 +198,14 @@ export const productService = {
     return api.post('/api/lots', lotData);
   },
 
+  async updateLot(id, lotData) {
+    return api.patch(`/api/lots/${id}`, lotData);
+  },
+
+  async deleteLot(id) {
+    return api.delete(`/api/lots/${id}`);
+  },
+
   async getMyLots(userId) {
     const r = await api.get(`/api/users/${userId}/lots`);
     return { success: true, data: r.lots.map(normalizeProduct) };
