@@ -49,6 +49,9 @@ export default function UserProfilePage() {
           {user.username && (
             <div className={styles.username}>@{user.username}</div>
           )}
+          {user.bio && (
+            <p className={styles.bio}>{user.bio}</p>
+          )}
           <div className={styles.joinDate}>Member since {joinDate}</div>
         </div>
 

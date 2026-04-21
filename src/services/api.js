@@ -294,11 +294,17 @@ export const chatService = {
   },
 };
 
-// ─── USER PROFILE (backend: GET /api/users/:id) ──────────────────────────────
+// ─── USER PROFILE (backend: GET /api/users/:id, PATCH /api/users/:id) ────────
 export const userService = {
   /** Accepts either a numeric Telegram userId or a username string. */
   async getProfile(idOrUsername) {
     const r = await api.get(`/api/users/${idOrUsername}`);
+    return r.user ?? null;
+  },
+
+  /** Update bio / avatar / username for the current user. */
+  async updateProfile(userId, data) {
+    const r = await api.patch(`/api/users/${userId}`, data);
     return r.user ?? null;
   },
 };

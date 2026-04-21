@@ -63,6 +63,15 @@
   margin-top: 2px;
 }
 
+.bio {
+  font-size: 13px;
+  color: var(--gray-3);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 280px;
+  margin: 4px 0 0;
+}
+
 /* ─── Stats grid ─────────────────────────────────────────────── */
 .statsGrid {
   display: grid;

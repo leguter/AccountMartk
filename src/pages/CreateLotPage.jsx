@@ -12,12 +12,14 @@ const CATEGORIES = [
   { value: 'phone', label: '📱 Phone Number' },
 ];
 
+const SUBSCRIBERS_REQUIRED_CATS = ['telegram', 'youtube'];
+
 const INITIAL_FORM = {
   title: '',
   description: '',
   price: '',
   category: 'telegram',
-  followers: '',
+  subscribersCount: '',
   country: '',
   age: '',
   engagementRate: '',
@@ -48,6 +50,7 @@ export default function CreateLotPage() {
           description: lot.description ?? '',
           price: String(lot.price ?? ''),
           category: lot.category ?? 'telegram',
+          subscribersCount: lot.subscribersCount ? String(lot.subscribersCount) : '',
         }));
       })
       .catch((err) => {
@@ -61,6 +64,8 @@ export default function CreateLotPage() {
     setErrors((e) => ({ ...e, [field]: undefined, global: undefined }));
   };
 
+  const needsSubscribers = SUBSCRIBERS_REQUIRED_CATS.includes(form.category);
+
   const validate = () => {
     const e = {};
     if (!form.title.trim()) e.title = 'Title is required';
@@ -68,6 +73,12 @@ export default function CreateLotPage() {
     const price = Number(form.price);
     if (!form.price || isNaN(price) || price <= 0) e.price = 'Enter a valid price';
     if (!form.category) e.category = 'Select a category';
+    if (needsSubscribers) {
+      const subs = Number(form.subscribersCount);
+      if (!form.subscribersCount || isNaN(subs) || subs <= 0) {
+        e.subscribersCount = `Subscribers count is required for ${form.category} listings`;
+      }
+    }
     return e;
   };
 
@@ -86,6 +97,7 @@ export default function CreateLotPage() {
       description: form.description.trim(),
       price: Number(form.price),
       category: form.category,
+      ...(form.subscribersCount ? { subscribersCount: Number(form.subscribersCount) } : {}),
     };
 
     try {
@@ -221,6 +233,28 @@ export default function CreateLotPage() {
           </div>
           {errors.price && <span className={styles.error}>{errors.price}</span>}
         </div>
+
+        {/* Subscribers count — required for Telegram / YouTube */}
+        {needsSubscribers && (
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="lot-subs">
+              Subscribers count
+              <span className={styles.labelHint}> (required)</span>
+            </label>
+            <input
+              id="lot-subs"
+              className={[styles.input, errors.subscribersCount ? styles.inputError : ''].join(' ')}
+              type="number"
+              min="1"
+              placeholder="e.g. 52000"
+              value={form.subscribersCount}
+              onChange={(e) => set('subscribersCount', e.target.value)}
+            />
+            {errors.subscribersCount && (
+              <span className={styles.error}>{errors.subscribersCount}</span>
+            )}
+          </div>
+        )}
 
         {/* Optional stats — only shown on create */}
         {!editId && (

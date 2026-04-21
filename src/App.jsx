@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import Search from './pages/Search';
 import UserProfilePage from './pages/UserProfilePage';
 import CreateLotPage from './pages/CreateLotPage';
+import EditProfilePage from './pages/EditProfilePage';
 import ChatPage from './pages/ChatPage';
 import ChatsPage from './pages/ChatsPage';
 import ProfileBalancePage from './pages/ProfileBalancePage';
@@ -45,6 +46,7 @@ function AppInner() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/balance" element={<ProfileBalancePage />} />
             <Route path="/create-lot" element={<CreateLotPage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/chat/:orderId" element={<ChatPage />} />
             <Route path="/chats" element={<ChatsPage />} />
           </Routes>

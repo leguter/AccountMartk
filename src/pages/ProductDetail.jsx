@@ -142,8 +142,20 @@ export default function ProductDetail() {
         </div>
       )}
 
-      {/* Followers */}
-      {product.followers && (
+      {/* Subscribers count (when available) */}
+      {product.subscribersCount && (
+        <div className={styles.followersBar}>
+          <div className={styles.followersNum}>
+            {product.subscribersCount >= 1000
+              ? `${(product.subscribersCount / 1000).toFixed(product.subscribersCount >= 10000 ? 0 : 1)}K`
+              : product.subscribersCount.toLocaleString()}
+          </div>
+          <div className={styles.followersLabel}>subscribers</div>
+        </div>
+      )}
+
+      {/* Followers (legacy field) */}
+      {product.followers && !product.subscribersCount && (
         <div className={styles.followersBar}>
           <div className={styles.followersNum}>
             {product.followers.toLocaleString()}
