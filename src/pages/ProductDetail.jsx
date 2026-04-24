@@ -62,9 +62,15 @@ export default function ProductDetail() {
       const orderId = res?.order?.id;
       if (orderId) {
         navigate(`/chat/${orderId}`);
+      } else {
+        throw new Error('No order ID returned from server');
       }
     } catch (err) {
       console.error('Contact seller failed:', err);
+      notification('error');
+      // Surface the error to the user
+      const msg = err?.message || 'Failed to open chat. Please try again.';
+      alert(msg);
     } finally {
       setContacting(false);
     }

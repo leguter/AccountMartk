@@ -21,7 +21,7 @@ function ChatItem({ chat, currentUserId, onClick }) {
   const isBuyer = String(chat.buyerId) === String(currentUserId);
   const other = isBuyer ? chat.seller : chat.buyer;
   const name = other?.firstName || other?.username || 'Unknown';
-  const avatar = other?.photoUrl || null;
+  const avatar = other?.avatar || null;
   const lastMsg = chat.lastMessage;
   const lastText = lastMsg?.text || '…';
   const lastTime = formatTime(lastMsg?.createdAt);
