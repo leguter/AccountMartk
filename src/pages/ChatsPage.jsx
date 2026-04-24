@@ -18,7 +18,7 @@ function formatTime(dateStr) {
 }
 
 function ChatItem({ chat, currentUserId, onClick }) {
-  const isBuyer = chat.buyerId === currentUserId;
+  const isBuyer = String(chat.buyerId) === String(currentUserId);
   const other = isBuyer ? chat.seller : chat.buyer;
   const name = other?.firstName || other?.username || 'Unknown';
   const avatar = other?.photoUrl || null;

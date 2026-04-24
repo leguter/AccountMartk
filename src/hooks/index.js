@@ -254,6 +254,8 @@ export function useOrder(orderId) {
 
   useEffect(() => {
     fetchOrder();
+    const timer = setInterval(fetchOrder, 15000);
+    return () => clearInterval(timer);
   }, [fetchOrder]);
 
   return { order, loading, error, refresh: fetchOrder };

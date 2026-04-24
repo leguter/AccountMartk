@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrder, useHaptic } from '../hooks';
+import { useUserStore } from '../store';
 import { paymentService } from '../services/api';
 import { StarsPrice, Button, Skeleton } from '../components/ui';
 import ChatWindow from '../components/chat/ChatWindow';
@@ -10,9 +11,12 @@ export default function ChatPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { order, loading, error, refresh } = useOrder(orderId);
+  const user = useUserStore((s) => s.user);
   const [supportOpen, setSupportOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { impact, notification } = useHaptic();
+
+  const isBuyer = order && user ? String(order.buyerId) === String(user.id) : false;
 
   const handleBack = () => navigate(-1);
 
@@ -64,7 +68,7 @@ export default function ChatPage() {
           )}
         </div>
 
-        {order?.status === 'paid' && (
+        {order?.status === 'paid' && isBuyer && (
           <Button 
             variant="success" 
             size="sm" 
