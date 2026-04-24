@@ -37,10 +37,16 @@ export default function Profile() {
   const { data: fetchedOrders, loading: ordersLoading } = useMyOrders();
   const allOrders = Array.isArray(fetchedOrders) ? fetchedOrders : [];
 
-  const purchases = allOrders.filter((o) => String(o.buyerId) === String(user?.id));
-  const sales = allOrders.filter((o) => String(o.sellerId) === String(user?.id));
+  const purchases = allOrders.filter(
+    (o) => String(o.buyerId) === String(user?.id) && o.status !== 'pending'
+  );
+  const sales = allOrders.filter(
+    (o) => String(o.sellerId) === String(user?.id) && o.status !== 'pending'
+  );
 
-  const activeOrdersCount = allOrders.filter((o) => o && o.status !== 'completed' && o.status !== 'cancelled').length;
+  const activeOrdersCount = allOrders.filter(
+    (o) => o && o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'pending'
+  ).length;
 
   if (!user) {
     return (
