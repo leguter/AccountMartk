@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useBalance, useMyLots, usePurchaseHistory } from '../hooks';
 import { balanceService } from '../services/api';
 import { Button, StarsPrice, EmptyState, Skeleton } from '../components/ui';
 import { ProductCard } from '../components/marketplace/ProductCard';
 import styles from './ProfileBalancePage.module.css';
+
+const FAST_FEE = 0.10;
 
 export default function ProfileBalancePage() {
   const navigate = useNavigate();
@@ -14,24 +16,50 @@ export default function ProfileBalancePage() {
 
   const { data: ordersData, loading: ordersLoading } = usePurchaseHistory();
   const rawOrders = Array.isArray(ordersData) ? ordersData : [];
-  // Seller dashboard shows orders where this user is the seller
   const activeOrders = rawOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
 
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [withdrawMsg, setWithdrawMsg] = useState(null);
+  // Withdraw state
+  const [withdrawing, setWithdrawing]       = useState(false);
+  const [withdrawMsg, setWithdrawMsg]       = useState(null);
+  const [showOptions, setShowOptions]       = useState(false);
+  const [eligibility, setEligibility]       = useState(null);
+  const [eligLoading, setEligLoading]       = useState(false);
 
-  const handleWithdraw = async () => {
-    if (balance <= 0) return;
-    setWithdrawing(true);
+  const loadEligibility = async () => {
+    setEligLoading(true);
     try {
-      await balanceService.withdraw(balance);
-      setWithdrawMsg(`✅ Withdrawal of ${balance} Stars initiated!`);
+      const e = await balanceService.getWithdrawEligibility();
+      setEligibility(e);
+    } catch {
+      setEligibility(null);
+    } finally {
+      setEligLoading(false);
+    }
+  };
+
+  const handleWithdrawClick = () => {
+    if (balance <= 0) return;
+    setShowOptions(true);
+    loadEligibility();
+  };
+
+  const handleWithdraw = async (mode) => {
+    setWithdrawing(true);
+    setShowOptions(false);
+    try {
+      const res = await balanceService.withdraw(balance, mode);
+      const { netAmount, fee, mode: appliedMode } = res;
+      if (fee > 0) {
+        setWithdrawMsg(`✅ Withdrawn ${netAmount} ⭐  (fee: ${fee} ⭐)`);
+      } else {
+        setWithdrawMsg(`✅ Withdrawn ${netAmount} ⭐  — no fee!`);
+      }
       refreshBalance();
     } catch (err) {
-      setWithdrawMsg(`❌ Error: ${err.message}`);
+      setWithdrawMsg(`❌ ${err.message}`);
     } finally {
       setWithdrawing(false);
-      setTimeout(() => setWithdrawMsg(null), 4000);
+      setTimeout(() => setWithdrawMsg(null), 5000);
     }
   };
 
@@ -42,9 +70,12 @@ export default function ProfileBalancePage() {
 
   const statusMap = {
     pending: { label: 'Awaiting payment', color: 'var(--yellow)' },
-    paid: { label: 'In escrow', color: 'var(--info)' },
-    completed: { label: 'Completed', color: 'var(--success)' },
+    paid:    { label: 'In escrow',        color: 'var(--info)' },
+    completed:{ label: 'Completed',       color: 'var(--success)' },
   };
+
+  const fastNet  = balance - Math.floor(balance * FAST_FEE);
+  const fastFee  = Math.floor(balance * FAST_FEE);
 
   return (
     <div className={styles.page}>
@@ -78,26 +109,91 @@ export default function ProfileBalancePage() {
             <div className={styles.withdrawMsg}>{withdrawMsg}</div>
           )}
 
-          <div className={styles.balanceActions}>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleWithdraw}
-              loading={withdrawing}
-              disabled={balance <= 0 || balanceLoading}
-              fullWidth
-            >
-              Withdraw Stars
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => alert('Support via @support')}
-              fullWidth
-            >
-              💬 Support
-            </Button>
-          </div>
+          {/* Withdraw option picker */}
+          {showOptions && (
+            <div className={styles.withdrawOptions}>
+              <div className={styles.withdrawOptionsTitle}>Choose withdraw type</div>
+
+              {eligLoading ? (
+                <Skeleton height={48} radius="10px" />
+              ) : eligibility && !eligibility.eligible ? (
+                <div className={styles.withdrawLocked}>
+                  🔒 Funds locked — fast withdraw available in{' '}
+                  <strong>{Math.ceil(2 - eligibility.daysElapsed)} day(s)</strong>
+                </div>
+              ) : (
+                <>
+                  {/* Fast — 10 % fee */}
+                  <button
+                    className={styles.withdrawOption}
+                    onClick={() => handleWithdraw('fast')}
+                    disabled={!eligibility?.eligible}
+                  >
+                    <div className={styles.withdrawOptionLeft}>
+                      <span className={styles.withdrawOptionTitle}>⚡ Instant (2+ days)</span>
+                      <span className={styles.withdrawOptionSub}>10% fee · processed immediately</span>
+                    </div>
+                    <div className={styles.withdrawOptionRight}>
+                      <span className={styles.withdrawOptionAmount}>
+                        <StarsPrice amount={fastNet} size="sm" />
+                      </span>
+                      <span className={styles.withdrawOptionFee}>−{fastFee} ⭐</span>
+                    </div>
+                  </button>
+
+                  {/* Free — 20 days */}
+                  <button
+                    className={styles.withdrawOption}
+                    onClick={() => handleWithdraw('free')}
+                    disabled={eligibility?.mode !== 'free'}
+                    style={{ opacity: eligibility?.mode !== 'free' ? 0.45 : 1 }}
+                  >
+                    <div className={styles.withdrawOptionLeft}>
+                      <span className={styles.withdrawOptionTitle}>🆓 Free (20+ days)</span>
+                      <span className={styles.withdrawOptionSub}>
+                        {eligibility?.mode === 'free'
+                          ? 'No fee · available now'
+                          : `Available after ${Math.ceil(20 - (eligibility?.daysElapsed ?? 0))} day(s)`}
+                      </span>
+                    </div>
+                    <div className={styles.withdrawOptionRight}>
+                      <span className={styles.withdrawOptionAmount}>
+                        <StarsPrice amount={balance} size="sm" />
+                      </span>
+                      <span className={styles.withdrawOptionFee}>no fee</span>
+                    </div>
+                  </button>
+                </>
+              )}
+
+              <button className={styles.withdrawCancel} onClick={() => setShowOptions(false)}>
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {!showOptions && (
+            <div className={styles.balanceActions}>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleWithdrawClick}
+                loading={withdrawing}
+                disabled={balance <= 0 || balanceLoading}
+                fullWidth
+              >
+                Withdraw Stars
+              </Button>
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => navigate('/rules')}
+                fullWidth
+              >
+                📋 Withdraw Rules
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Active orders */}
@@ -120,11 +216,7 @@ export default function ProfileBalancePage() {
           ) : (
             <div className={styles.ordersList}>
               {activeOrders.map((order) => (
-                <Link
-                  key={order.id}
-                  to={`/chat/${order.id}`}
-                  className={styles.orderCard}
-                >
+                <Link key={order.id} to={`/chat/${order.id}`} className={styles.orderCard}>
                   <div className={styles.orderCardLeft}>
                     <div className={styles.orderTitle}>{order.lot?.title || 'Order'}</div>
                     <div className={styles.orderDate}>{formatDate(order.createdAt)}</div>

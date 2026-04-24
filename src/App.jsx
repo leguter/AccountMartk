@@ -12,13 +12,24 @@ import EditProfilePage from './pages/EditProfilePage';
 import ChatPage from './pages/ChatPage';
 import ChatsPage from './pages/ChatsPage';
 import ProfileBalancePage from './pages/ProfileBalancePage';
+import RulesPage from './pages/RulesPage';
 import styles from './App.module.css';
+
+const RULES_KEY = 'rules_accepted_v1';
 
 function AppInner() {
   const location = useLocation();
   const { initTelegram, isLoading, error } = useUserStore();
 
-  const [slowLoad, setSlowLoad] = useState(false);
+  const [slowLoad, setSlowLoad]         = useState(false);
+  const [rulesAccepted, setRulesAccepted] = useState(
+    () => localStorage.getItem(RULES_KEY) === 'true'
+  );
+
+  const acceptRules = () => {
+    localStorage.setItem(RULES_KEY, 'true');
+    setRulesAccepted(true);
+  };
 
   useEffect(() => {
     void initTelegram();
@@ -34,6 +45,11 @@ function AppInner() {
     return <LoadingScreen slow={slowLoad} error={error} />;
   }
 
+  // ── First-launch gate ──────────────────────────────────────────
+  if (!rulesAccepted) {
+    return <RulesPage acceptMode onAccept={acceptRules} />;
+  }
+
   return (
     <div className={styles.app}>
       <main className={styles.main} key={location.pathname}>
@@ -47,6 +63,7 @@ function AppInner() {
             <Route path="/profile/balance" element={<ProfileBalancePage />} />
             <Route path="/create-lot" element={<CreateLotPage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/rules" element={<RulesPage />} />
             <Route path="/chat/:orderId" element={<ChatPage />} />
             <Route path="/chats" element={<ChatsPage />} />
           </Routes>

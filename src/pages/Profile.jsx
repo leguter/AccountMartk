@@ -217,7 +217,8 @@ export default function Profile() {
           {[
             { icon: '🔔', label: 'Notifications', action: 'toggle' },
             { icon: '🌐', label: 'Language', value: user?.language_code?.toUpperCase() || 'EN' },
-            { icon: '📋', label: 'Terms of Service', action: 'link' },
+            { icon: '📋', label: 'Marketplace Rules', action: 'rules' },
+            { icon: '📄', label: 'Terms of Service', action: 'link' },
             { icon: '🔒', label: 'Privacy Policy', action: 'link' },
             { icon: '📞', label: 'Support', action: 'support' },
           ].map((item) => (
@@ -227,6 +228,9 @@ export default function Profile() {
               onClick={() => {
                 if (item.action === 'support') {
                   alert('Support will be implemented later. For now, contact @support on Telegram.');
+                }
+                if (item.action === 'rules') {
+                  navigate('/rules');
                 }
               }}
             >

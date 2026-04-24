@@ -215,3 +215,105 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* ─── Withdraw options ─────────────────────────────────────────── */
+.withdrawOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeSlideUp 0.2s ease;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.withdrawOptionsTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-3);
+  margin-bottom: 2px;
+}
+
+.withdrawOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--black-2);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  width: 100%;
+}
+
+.withdrawOption:hover:not(:disabled) {
+  border-color: rgba(245,197,24,0.35);
+  background: var(--black-3);
+}
+
+.withdrawOption:active { transform: scale(0.98); }
+
+.withdrawOptionLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.withdrawOptionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.withdrawOptionSub {
+  font-size: 11px;
+  color: var(--gray-3);
+}
+
+.withdrawOptionRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.withdrawOptionAmount {
+  font-weight: 700;
+}
+
+.withdrawOptionFee {
+  font-size: 11px;
+  color: var(--gray-3);
+}
+
+.withdrawLocked {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.20);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--error);
+  line-height: 1.4;
+}
+
+.withdrawCancel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  align-self: center;
+  transition: color var(--transition-fast);
+}
+
+.withdrawCancel:hover { color: var(--white); }

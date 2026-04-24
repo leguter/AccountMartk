@@ -319,7 +319,11 @@ export const balanceService = {
     return { success: true, data: r.transactions || [] };
   },
 
-  async withdraw(amount) {
-    return api.post('/api/withdraw', { amount });
+  async getWithdrawEligibility() {
+    return api.get('/api/withdraw-eligibility');
+  },
+
+  async withdraw(amount, mode = 'free') {
+    return api.post('/api/withdraw', { amount, mode });
   },
 };

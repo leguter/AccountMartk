@@ -1,0 +1,235 @@
+.page {
+  min-height: 100dvh;
+  background: var(--black);
+  padding-bottom: 80px;
+}
+
+/* ─── Top bar ─────────────────────────────────────────── */
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--black-3);
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+.backBtn:hover  { background: var(--black-4); }
+.backBtn:active { transform: scale(0.92); }
+
+.topBarTitle {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+  flex: 1;
+  text-align: center;
+  margin-right: 36px; /* compensate backBtn */
+}
+
+/* ─── Accept banner ───────────────────────────────────── */
+.acceptBanner {
+  background: rgba(245,197,24,0.08);
+  border-bottom: 1px solid rgba(245,197,24,0.2);
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--yellow);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ─── Content ─────────────────────────────────────────── */
+.content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ─── Section accordion ───────────────────────────────── */
+.section {
+  background: var(--black-2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.section:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.sectionHighlight {
+  border-color: rgba(245,197,24,0.2);
+  background: linear-gradient(135deg, var(--black-2), var(--black-3));
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+.sectionHeader:hover { background: rgba(255,255,255,0.03); }
+
+.sectionIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  flex: 1;
+}
+
+.chevron {
+  color: var(--gray-3);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ─── Section body ────────────────────────────────────── */
+.sectionBody {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--gray-4, #d1d5db);
+  line-height: 1.5;
+}
+
+.ruleDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--yellow);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+/* ─── Withdraw cards ──────────────────────────────────── */
+.withdrawIntro {
+  font-size: 13px;
+  color: var(--gray-3);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.withdrawCards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.withdrawCard {
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.locked  { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.2); }
+.fast    { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+.free    { background: rgba(34,197,94,0.06);  border-color: rgba(34,197,94,0.2); }
+
+.withdrawCardIcon { font-size: 20px; }
+
+.withdrawCardTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.withdrawCardPeriod {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.withdrawCardFee {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.withdrawCardDesc {
+  font-size: 12px;
+  color: var(--gray-3);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+/* ─── Accept footer ───────────────────────────────────── */
+.acceptFooter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 24px;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.acceptBtn {
+  width: 100%;
+  padding: 16px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: #000;
+  background: var(--yellow);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.acceptBtn:hover  { opacity: 0.9; }
+.acceptBtn:active { transform: scale(0.97); }
