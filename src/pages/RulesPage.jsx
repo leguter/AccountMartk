@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../i18n';
 import styles from './RulesPage.module.css';
 
 const SECTIONS = [
@@ -102,6 +103,7 @@ const SECTIONS = [
 
 export default function RulesPage({ acceptMode = false, onAccept }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(acceptMode ? null : 'general');
 
   return (
@@ -115,13 +117,13 @@ export default function RulesPage({ acceptMode = false, onAccept }) {
           </button>
         )}
         <span className={styles.topBarTitle}>
-          {acceptMode ? '📋 Marketplace Rules' : 'Marketplace Rules'}
+          {acceptMode ? `📋 ${t('rules_title')}` : t('rules_title')}
         </span>
       </header>
 
       {acceptMode && (
         <div className={styles.acceptBanner}>
-          Please read and accept the rules before using the marketplace.
+          {t('rules_accept_banner')}
         </div>
       )}
 
@@ -167,7 +169,7 @@ export default function RulesPage({ acceptMode = false, onAccept }) {
       {acceptMode && (
         <div className={styles.acceptFooter}>
           <button className={styles.acceptBtn} onClick={onAccept}>
-            ✅ I Accept the Rules
+            {t('rules_accept_btn')}
           </button>
         </div>
       )}

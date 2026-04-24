@@ -7,6 +7,7 @@ import api, {
   readPersistedUserSlice,
   USER_PERSIST_KEY,
 } from '../services/api';
+import { useLanguageStore } from '../i18n';
 
 // ─── USER STORE ───────────────────────────────────────────────────────────────
 export const useUserStore = create(
@@ -105,6 +106,7 @@ export const useUserStore = create(
 
               if (res && res.token && res.user) {
                 const u = res.user;
+                const langCode = u.languageCode || tg.initDataUnsafe?.user?.language_code || 'ru';
                 setApiAccessToken(res.token);
                 set({
                   user: {
@@ -113,13 +115,17 @@ export const useUserStore = create(
                     first_name: u.firstName || u.first_name || '',
                     last_name: u.lastName || u.last_name || '',
                     photo_url: u.photoUrl || u.photo_url || null,
-                    language_code: u.languageCode || 'en',
+                    bio: u.bio ?? null,
+                    avatar: u.avatar ?? null,
+                    language_code: langCode,
                   },
                   initData,
                   accessToken: res.token,
                   isAuthenticated: true,
                   isLoading: false,
                 });
+                // Sync language from Telegram (only if user hasn't picked manually)
+                useLanguageStore.getState().syncFromTelegram(langCode);
                 console.log('Telegram auth successful');
                 return tg;
               } else {

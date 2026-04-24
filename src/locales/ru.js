@@ -1,0 +1,133 @@
+const ru = {
+  // Bottom nav
+  nav_market:  'Маркет',
+  nav_chats:   'Чаты',
+  nav_sell:    'Продать',
+  nav_profile: 'Профиль',
+
+  // Marketplace
+  greeting:          'Привет, {{name}} 👋',
+  greeting_default:  'Добро пожаловать 👋',
+  hero_title_1:      'Найди свой',
+  hero_title_2:      'идеальный аккаунт',
+  stars_only:        'Только Stars',
+  accounts_sold:     'продано аккаунтов',
+  satisfaction:      'довольных клиентов',
+  delivery:          'доставка',
+  accounts_available: '{{count}} аккаунт(ов) доступно',
+  no_accounts_title: 'Ничего не найдено',
+  no_accounts_desc:  'Попробуй другой запрос или другую категорию',
+
+  // Profile
+  profile:          'Профиль',
+  purchases:        'Покупки',
+  sales:            'Продажи',
+  listings:         'Объявления',
+  orders:           'Заказы',
+  active:           'активных',
+  my_purchases:     'Мои покупки',
+  my_sales:         'Мои продажи',
+  no_purchases_title: 'Покупок ещё нет',
+  no_purchases_desc:  'Перейди на маркет и найди свой первый аккаунт',
+  no_sales_title:   'Продаж ещё нет',
+  no_sales_desc:    'Создай объявление, чтобы начать продавать',
+  seller_dashboard: 'Панель продавца',
+  listing:          'объявление',
+  listings_few:     'объявления',
+  listings_many:    'объявлений',
+  active_order:     'активный заказ',
+  active_orders_few:'активных заказа',
+  active_orders_many:'активных заказов',
+
+  // Settings
+  settings:         'Настройки',
+  notifications:    'Уведомления',
+  language:         'Язык',
+  marketplace_rules:'Правила маркета',
+  terms:            'Условия использования',
+  privacy:          'Политика конфиденциальности',
+  support:          'Поддержка',
+
+  // Order statuses
+  status_pending:   'Чат',
+  status_paid:      'В эскроу',
+  status_completed: 'Завершён',
+  status_cancelled: 'Отменён',
+
+  // Seller dashboard / balance
+  available_balance:'Доступный баланс',
+  pending_escrow:   'на эскроу',
+  withdraw_stars:   'Вывести Stars',
+  withdraw_rules:   '📋 Правила вывода',
+  active_orders:    'Активные заказы',
+  no_active_orders: 'Нет активных заказов',
+  no_active_orders_desc: 'Активные заказы появятся здесь, когда покупатели оплатят ваши объявления.',
+  my_listings:      'Мои объявления',
+  new:              '+ Новое',
+  no_listings_title:'Нет объявлений',
+  no_listings_desc: 'Создайте первое объявление, чтобы начать продавать.',
+  create_listing:   'Создать объявление',
+  in_escrow:        'В эскроу',
+
+  // Create / Edit lot
+  create_lot:       'Создать объявление',
+  edit_lot:         'Редактировать объявление',
+  field_category:   'Категория',
+  field_title:      'Название',
+  field_desc:       'Описание',
+  field_price:      'Цена',
+  field_price_hint: '(Telegram Stars)',
+  field_subscribers:'Количество подписчиков',
+  field_subs_hint:  '(обязательно)',
+  optional_details: 'Детали аккаунта (необязательно)',
+  btn_create:       'Опубликовать объявление',
+  btn_save:         'Сохранить изменения',
+
+  // Edit profile
+  edit_profile:     'Редактировать профиль',
+  field_username:   'Юзернейм',
+  field_bio:        'О себе',
+  field_bio_hint:   '(макс. 500 симв.)',
+  field_avatar:     'URL аватара',
+  field_avatar_hint:'(необязательно)',
+  btn_save_profile: 'Сохранить',
+  profile_updated:  'Профиль обновлён!',
+  redirecting:      'Перенаправление…',
+
+  // Product detail
+  about_account:    'Об аккаунте',
+  seller:           'Продавец',
+  why_buy:          'Почему стоит купить?',
+  escrow_title:     'Защита эскроу',
+  escrow_desc:      'Stars удерживаются до подтверждения получения',
+  instant_title:    'Мгновенная передача',
+  instant_desc:     'Данные для входа отправляются в течение минут',
+  dispute_title:    'Окно спора 24ч',
+  dispute_desc:     'Открой спор, если что-то пошло не так',
+  support_title:    'Поддержка 24/7',
+  support_desc:     'Живая поддержка через Telegram',
+  contact_seller:   'Связаться с продавцом',
+  edit_listing:     '✏️ Редактировать',
+  delete_listing:   '🗑️ Удалить',
+  confirm_delete:   '⚠️ Подтвердить удаление',
+  subscribers:      'подписчиков',
+
+  // Chat
+  type_message:     'Написать сообщение…',
+  send:             'Отправить',
+
+  // Rules
+  rules_title:      'Правила маркета',
+  rules_accept_banner: 'Прочитайте и примите правила перед использованием маркета.',
+  rules_accept_btn: '✅ Принимаю правила',
+
+  // Common
+  back:    'Назад',
+  loading: 'Загрузка…',
+  error:   'Ошибка',
+  cancel:  'Отмена',
+  confirm: 'Подтвердить',
+  save:    'Сохранить',
+};
+
+export default ru;

@@ -3,18 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUserStore } from '../store';
 import { useBalance, useMyLots, useMyOrders } from '../hooks';
 import { Avatar, StarsPrice, Skeleton, EmptyState } from '../components/ui';
+import { useTranslation } from '../i18n';
 import styles from './Profile.module.css';
 
-const STATUS_LABELS = {
-  pending: 'Chatting',
-  paid: 'In Escrow',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
 const STATUS_CSS = {
-  pending: styles['status--pending'],
-  paid: styles['status--paid'],
+  pending:   styles['status--pending'],
+  paid:      styles['status--paid'],
   completed: styles['status--completed'],
   cancelled: styles['status--error'],
 };
@@ -28,6 +22,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
   const [ordersTab, setOrdersTab] = useState('purchases');
+  const { t, lang, setLang } = useTranslation();
 
   const { balance, loading: balanceLoading } = useBalance();
 
@@ -48,6 +43,13 @@ export default function Profile() {
     (o) => o && o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'pending'
   ).length;
 
+  const STATUS_LABELS = {
+    pending:   t('status_pending'),
+    paid:      t('status_paid'),
+    completed: t('status_completed'),
+    cancelled: t('status_cancelled'),
+  };
+
   if (!user) {
     return (
       <div className={styles.page}>
@@ -60,7 +62,9 @@ export default function Profile() {
 
   const renderOrderItem = (item) => {
     const lot = item.lot;
-    const icon = lot?.category ? ({ telegram: '✈️', instagram: '📸', youtube: '▶️', tiktok: '🎵', phone: '📱' }[lot.category] || '📦') : '📦';
+    const icon = lot?.category
+      ? ({ telegram: '✈️', instagram: '📸', youtube: '▶️', tiktok: '🎵', phone: '📱' }[lot.category] || '📦')
+      : '📦';
     return (
       <div key={item.id} className={styles.historyItem} onClick={() => navigate(`/chat/${item.id}`)} style={{ cursor: 'pointer' }}>
         <div className={styles.historyIcon}>{icon}</div>
@@ -80,10 +84,12 @@ export default function Profile() {
 
   const activeList = ordersTab === 'purchases' ? purchases : sales;
 
+  const handleLangToggle = () => setLang(lang === 'ru' ? 'en' : 'ru');
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.pageTitle}>Profile</h1>
+        <h1 className={styles.pageTitle}>{t('profile')}</h1>
       </div>
 
       <div className={styles.userCard}>
@@ -118,7 +124,7 @@ export default function Profile() {
               <span>Buyer</span>
             </div>
             <Link to="/profile/edit" className={styles.editProfileBtn}>
-              ✏️ Edit
+              ✏️ {t('edit_profile')}
             </Link>
           </div>
         </div>
@@ -127,25 +133,25 @@ export default function Profile() {
       <div className={styles.statsRow}>
         <div className={styles.statBox}>
           <span className={styles.statBoxValue}>{purchases.length}</span>
-          <span className={styles.statBoxLabel}>Purchases</span>
+          <span className={styles.statBoxLabel}>{t('purchases')}</span>
         </div>
         <div className={styles.statBoxDivider} />
         <div className={styles.statBox}>
           <span className={styles.statBoxValue}>{sales.length}</span>
-          <span className={styles.statBoxLabel}>Sales</span>
+          <span className={styles.statBoxLabel}>{t('sales')}</span>
         </div>
         <div className={styles.statBoxDivider} />
         <div className={styles.statBox}>
           <span className={styles.statBoxValue}>{myLots.length}</span>
-          <span className={styles.statBoxLabel}>Listings</span>
+          <span className={styles.statBoxLabel}>{t('listings')}</span>
         </div>
       </div>
 
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Orders</h2>
+          <h2 className={styles.sectionTitle}>{t('orders')}</h2>
           {activeOrdersCount > 0 && (
-            <span className={styles.sectionCount}>{activeOrdersCount} active</span>
+            <span className={styles.sectionCount}>{activeOrdersCount} {t('active')}</span>
           )}
         </div>
 
@@ -154,14 +160,14 @@ export default function Profile() {
             className={[styles.tab, ordersTab === 'purchases' ? styles.tabActive : ''].join(' ')}
             onClick={() => setOrdersTab('purchases')}
           >
-            My Purchases
+            {t('my_purchases')}
             {purchases.length > 0 && <span className={styles.tabBadge}>{purchases.length}</span>}
           </button>
           <button
             className={[styles.tab, ordersTab === 'sales' ? styles.tabActive : ''].join(' ')}
             onClick={() => setOrdersTab('sales')}
           >
-            My Sales
+            {t('my_sales')}
             {sales.length > 0 && <span className={styles.tabBadge}>{sales.length}</span>}
           </button>
         </div>
@@ -182,8 +188,8 @@ export default function Profile() {
         ) : activeList.length === 0 ? (
           <EmptyState
             icon={ordersTab === 'purchases' ? '🛒' : '🏪'}
-            title={ordersTab === 'purchases' ? 'No purchases yet' : 'No sales yet'}
-            description={ordersTab === 'purchases' ? 'Browse the marketplace and find your first account' : 'Create a listing to start selling'}
+            title={ordersTab === 'purchases' ? t('no_purchases_title') : t('no_sales_title')}
+            description={ordersTab === 'purchases' ? t('no_purchases_desc') : t('no_sales_desc')}
           />
         ) : (
           <div className={styles.historyList}>
@@ -196,10 +202,10 @@ export default function Profile() {
         <div className={styles.sellerCardLeft}>
           <div className={styles.sellerCardIcon}>🏪</div>
           <div>
-            <div className={styles.sellerCardTitle}>Seller Dashboard</div>
+            <div className={styles.sellerCardTitle}>{t('seller_dashboard')}</div>
             <div className={styles.sellerCardSub}>
-              {myLots.length} listing{myLots.length !== 1 ? 's' : ''}
-              {activeOrdersCount > 0 && ` · ${activeOrdersCount} active order${activeOrdersCount !== 1 ? 's' : ''}`}
+              {myLots.length} {t(myLots.length === 1 ? 'listing' : 'listings_few')}
+              {activeOrdersCount > 0 && ` · ${activeOrdersCount} ${t(activeOrdersCount === 1 ? 'active_order' : 'active_orders_few')}`}
             </div>
           </div>
         </div>
@@ -212,26 +218,23 @@ export default function Profile() {
       </Link>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Settings</h2>
+        <h2 className={styles.sectionTitle}>{t('settings')}</h2>
         <div className={styles.settingsList}>
           {[
-            { icon: '🔔', label: 'Notifications', action: 'toggle' },
-            { icon: '🌐', label: 'Language', value: user?.language_code?.toUpperCase() || 'EN' },
-            { icon: '📋', label: 'Marketplace Rules', action: 'rules' },
-            { icon: '📄', label: 'Terms of Service', action: 'link' },
-            { icon: '🔒', label: 'Privacy Policy', action: 'link' },
-            { icon: '📞', label: 'Support', action: 'support' },
+            { icon: '🔔', label: t('notifications'), action: 'toggle' },
+            { icon: '🌐', label: t('language'),      action: 'language', value: lang.toUpperCase() },
+            { icon: '📋', label: t('marketplace_rules'), action: 'rules' },
+            { icon: '📄', label: t('terms'),          action: 'link' },
+            { icon: '🔒', label: t('privacy'),        action: 'link' },
+            { icon: '📞', label: t('support'),        action: 'support' },
           ].map((item) => (
             <div
               key={item.label}
               className={styles.settingItem}
               onClick={() => {
-                if (item.action === 'support') {
-                  alert('Support will be implemented later. For now, contact @support on Telegram.');
-                }
-                if (item.action === 'rules') {
-                  navigate('/rules');
-                }
+                if (item.action === 'support')  alert('Support via @support on Telegram.');
+                if (item.action === 'rules')    navigate('/rules');
+                if (item.action === 'language') handleLangToggle();
               }}
             >
               <span className={styles.settingIcon}>{item.icon}</span>
