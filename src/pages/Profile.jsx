@@ -116,7 +116,7 @@ export default function Profile() {
               ID: {user?.id}
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, maxWidth: 90 }}>
             <div className={styles.premiumBadge}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
@@ -124,7 +124,7 @@ export default function Profile() {
               <span>Buyer</span>
             </div>
             <Link to="/profile/edit" className={styles.editProfileBtn}>
-              ✏️ {t('edit_profile')}
+              ✏️ {t('edit_profile_short')}
             </Link>
           </div>
         </div>

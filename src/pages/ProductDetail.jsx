@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProduct, useHaptic } from '../hooks';
 import { paymentService, productService } from '../services/api';
 import { useUserStore } from '../store';
+import { useTranslation } from '../i18n';
 import { Button, Badge, StarsPrice, Skeleton, ErrorState, Avatar } from '../components/ui';
 import styles from './ProductDetail.module.css';
 
@@ -19,6 +20,7 @@ export default function ProductDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const currentUser = useUserStore((s) => s.user);
   const { impact, notification } = useHaptic();
+  const { t } = useTranslation();
 
   const isOwner = !!(product && currentUser && String(product.userId ?? product.seller?.id) === String(currentUser.id));
 
@@ -150,7 +152,7 @@ export default function ProductDetail() {
               ? `${(product.subscribersCount / 1000).toFixed(product.subscribersCount >= 10000 ? 0 : 1)}K`
               : product.subscribersCount.toLocaleString()}
           </div>
-          <div className={styles.followersLabel}>subscribers</div>
+          <div className={styles.followersLabel}>{t('subscribers')}</div>
         </div>
       )}
 
@@ -166,7 +168,7 @@ export default function ProductDetail() {
 
       {/* Description */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>About this account</h2>
+        <h2 className={styles.sectionTitle}>{t('about_account')}</h2>
         <p className={styles.description}>{product.description}</p>
         {product.tags && (
           <div className={styles.tags}>
@@ -180,7 +182,7 @@ export default function ProductDetail() {
       {/* Seller */}
       {product.seller && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Seller</h2>
+          <h2 className={styles.sectionTitle}>{t('seller')}</h2>
           <Link to={`/user/${product.seller.id}`} className={styles.sellerCard}>
             <Avatar name={product.seller.username} size={44} />
             <div className={styles.sellerInfo}>
@@ -202,13 +204,13 @@ export default function ProductDetail() {
 
       {/* Why buy */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Why buy here?</h2>
+        <h2 className={styles.sectionTitle}>{t('why_buy')}</h2>
         <div className={styles.featureList}>
           {[
-            { icon: '🔐', title: 'Escrow Protection', desc: 'Stars held until you confirm delivery' },
-            { icon: '⚡', title: 'Instant Transfer', desc: 'Credentials delivered within minutes' },
-            { icon: '🔄', title: '24h Dispute Window', desc: 'Open a dispute if anything is wrong' },
-            { icon: '📞', title: '24/7 Support', desc: 'Live support via Telegram' },
+            { icon: '🔐', title: t('escrow_title'), desc: t('escrow_desc') },
+            { icon: '⚡', title: t('instant_title'), desc: t('instant_desc') },
+            { icon: '🔄', title: t('dispute_title'), desc: t('dispute_desc') },
+            { icon: '📞', title: t('support_title'), desc: t('support_desc') },
           ].map((f) => (
             <div key={f.title} className={styles.feature}>
               <span className={styles.featureIcon}>{f.icon}</span>
@@ -227,7 +229,7 @@ export default function ProductDetail() {
           /* Owner: Edit + Delete */
           <div className={styles.ownerActions}>
             <Button variant="secondary" size="md" onClick={handleEdit} fullWidth>
-              ✏️ Edit Listing
+              {t('edit_listing')}
             </Button>
             <Button
               variant="danger"
@@ -236,7 +238,7 @@ export default function ProductDetail() {
               loading={deleting}
               fullWidth
             >
-              {confirmDelete ? '⚠️ Confirm Delete' : '🗑️ Delete'}
+              {confirmDelete ? t('confirm_delete') : t('delete_listing')}
             </Button>
           </div>
         ) : (
@@ -262,7 +264,7 @@ export default function ProductDetail() {
                 </svg>
               }
             >
-              Contact Seller
+              {t('contact_seller')}
             </Button>
           </>
         )}
