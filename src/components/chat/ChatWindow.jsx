@@ -29,10 +29,24 @@ export default function ChatWindow({ order, refresh }) {
   const [disputeError, setDisputeError] = useState(null);
 
   const bottomRef = useRef(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const container = scrollRef.current;
+    if (!container) return;
+
+    // Check if we are already at or very near the bottom
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+    
+    // Check if last message is from current user (indicates we just sent something)
+    const lastMsg = messages[messages.length - 1];
+    const sentByMe = lastMsg && String(lastMsg.senderId) === String(currentUserId);
+
+    if (isAtBottom || sentByMe) {
+      // Use 'auto' instead of 'smooth' to avoid jumpy behavior/loops in some browsers
+      bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [messages, currentUserId]);
 
   if (!order) return null;
 
@@ -266,7 +280,7 @@ export default function ChatWindow({ order, refresh }) {
         </div>
       )}
 
-      <div className={styles.messages}>
+      <div className={styles.messages} ref={scrollRef}>
         {messages.length === 0 && (
           <div className={styles.emptyChat}>
             No messages yet. Start the conversation!
@@ -274,7 +288,7 @@ export default function ChatWindow({ order, refresh }) {
         )}
         {messages.map((msg) => (
           <MessageBubble
-            key={msg.id}
+            key={msg._key || msg.id}
             message={msg}
             currentUserId={currentUserId}
             isOptimistic={!!msg._optimistic}

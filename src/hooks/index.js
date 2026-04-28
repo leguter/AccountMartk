@@ -163,7 +163,8 @@ export function useChat(orderId) {
     setLoading(true);
     try {
       const res = await chatService.getMessages(orderId);
-      setMessages(Array.isArray(res.data) ? res.data : []);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setMessages(data.map(m => ({ ...m, _key: m.id })));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -203,14 +204,15 @@ export function useChat(orderId) {
       type: 'text',
       createdAt: new Date().toISOString(),
       _optimistic: true,
+      _key: tempId,
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
     try {
       const res = await chatService.sendMessage(orderId, text);
       if (res?.message) {
-        // Replace the optimistic placeholder with the real server message
-        setMessages((prev) => prev.map((m) => (m.id === tempId ? res.message : m)));
+        // Replace the optimistic placeholder with the real server message, but KEEP the key
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...res.message, _key: tempId } : m)));
       }
     } catch (err) {
       // Roll back optimistic message on error

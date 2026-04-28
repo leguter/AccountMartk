@@ -53,8 +53,8 @@ function AppInner() {
 
   return (
     <div className={styles.app}>
-      <main className={styles.main} key={location.pathname}>
-        <ErrorBoundary key={location.pathname}>
+      <main className={styles.main}>
+        <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Marketplace />} />
             <Route path="/product/:id" element={<ProductDetail />} />
