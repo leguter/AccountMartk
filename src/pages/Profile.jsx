@@ -73,7 +73,7 @@ export default function Profile() {
           <div className={styles.historyDate}>{formatDate(item.createdAt)}</div>
         </div>
         <div className={styles.historyRight}>
-          {lot?.price != null && <StarsPrice amount={lot.price} size="sm" />}
+          {item.amount != null && <StarsPrice amount={item.amount} size="sm" />}
           <span className={[styles.statusBadge, STATUS_CSS[item.status] || ''].join(' ')}>
             {STATUS_LABELS[item.status] || item.status}
           </span>
