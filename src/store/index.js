@@ -36,6 +36,12 @@ export const useUserStore = create(
       },
 
       initTelegram: async () => {
+        // ── Guard: skip re-auth if already authenticated ──────────
+        const current = get();
+        if (current.isAuthenticated && current.accessToken && !current.error) {
+          return null; // already logged in, do not re-auth
+        }
+
         set({ error: null });
         const tg = window.Telegram?.WebApp;
         if (!tg) {

@@ -33,7 +33,8 @@ function AppInner() {
 
   useEffect(() => {
     void initTelegram();
-  }, [initTelegram]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // must run ONCE on mount only — initTelegram is stable but Zustand spread can change its reference
 
   useEffect(() => {
     if (!isLoading) return;
