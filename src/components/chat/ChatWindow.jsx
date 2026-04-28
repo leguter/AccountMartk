@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useUserStore } from '../../store';
 import { useChat, useHaptic } from '../../hooks';
-import { paymentService } from '../../services/api';
+import { paymentService, disputeService } from '../../services/api';
 import { Button, StarsPrice } from '../ui';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -18,8 +18,15 @@ export default function ChatWindow({ order, refresh }) {
 
   const { messages, sendMessage, otherIsTyping, notifyTyping } = useChat(orderId);
   const { impact, notification } = useHaptic();
+
   const [paying, setPaying] = useState(false);
   const [confirming, setConfirming] = useState(false);
+
+  // Dispute UI state
+  const [showDisputeForm, setShowDisputeForm] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputing, setDisputing] = useState(false);
+  const [disputeError, setDisputeError] = useState(null);
 
   const bottomRef = useRef(null);
 
@@ -52,7 +59,6 @@ export default function ChatWindow({ order, refresh }) {
       } else {
         await new Promise((r) => setTimeout(r, 800));
       }
-      // Telegram confirmed payment — immediately update the backend
       try {
         await paymentService.manualConfirmPayment(order.id);
       } catch (e) {
@@ -83,6 +89,29 @@ export default function ChatWindow({ order, refresh }) {
     }
   };
 
+  const handleOpenDispute = async () => {
+    const trimmed = disputeReason.trim();
+    if (trimmed.length < 10) {
+      setDisputeError('Please describe the issue in at least 10 characters.');
+      return;
+    }
+    impact('heavy');
+    setDisputing(true);
+    setDisputeError(null);
+    try {
+      await disputeService.openDispute(order.id, trimmed);
+      notification('success');
+      setShowDisputeForm(false);
+      setDisputeReason('');
+      refresh();
+    } catch (err) {
+      setDisputeError(err.message || 'Failed to open dispute. Please try again.');
+      notification('error');
+    } finally {
+      setDisputing(false);
+    }
+  };
+
   const renderBanner = () => {
     const { status } = order;
 
@@ -96,12 +125,7 @@ export default function ChatWindow({ order, refresh }) {
             Stars are held securely until you confirm delivery.
           </p>
           <div className={styles.bannerActions}>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handlePay}
-              loading={paying}
-            >
+            <Button variant="primary" size="sm" onClick={handlePay} loading={paying}>
               Pay Stars
             </Button>
           </div>
@@ -120,33 +144,88 @@ export default function ChatWindow({ order, refresh }) {
       );
     }
 
-    if (status === 'paid' && isBuyer) {
+    if (status === 'paid') {
       return (
         <div className={[styles.orderBanner, styles.bannerPaid].join(' ')}>
-          <div className={styles.bannerTitle}>⏳ Waiting for delivery…</div>
-          <p className={styles.bannerSub}>
-            Once you receive the account details, confirm to release payment.
-          </p>
-          <div className={styles.bannerActions}>
-            <Button
-              variant="success"
-              size="sm"
-              onClick={handleConfirm}
-              loading={confirming}
-            >
-              Confirm Receipt
-            </Button>
-          </div>
+          {isBuyer ? (
+            <>
+              <div className={styles.bannerTitle}>⏳ Waiting for delivery…</div>
+              <p className={styles.bannerSub}>
+                Once you receive the account details, confirm to release payment.
+              </p>
+              <div className={styles.bannerActions}>
+                <Button variant="success" size="sm" onClick={handleConfirm} loading={confirming}>
+                  Confirm Receipt
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => { setShowDisputeForm(true); setDisputeError(null); }}
+                  disabled={disputing}
+                >
+                  ⚠️ Open Dispute
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.bannerTitle}>✅ Paid — please deliver</div>
+              <p className={styles.bannerSub}>
+                Stars are in escrow. Send the account credentials and wait for the buyer to confirm.
+              </p>
+              <div className={styles.bannerActions}>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => { setShowDisputeForm(true); setDisputeError(null); }}
+                  disabled={disputing}
+                >
+                  ⚠️ Open Dispute
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Dispute Form */}
+          {showDisputeForm && (
+            <div className={styles.disputeForm}>
+              <div className={styles.disputeTitle}>⚠️ Open a Dispute</div>
+              <p className={styles.disputeSub}>
+                Explain the issue. Our team will review and resolve within 24h.
+                Funds stay frozen until resolved.
+              </p>
+              <textarea
+                className={styles.disputeTextarea}
+                placeholder="Describe the problem in detail (min 10 characters)…"
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                rows={4}
+                maxLength={1000}
+              />
+              {disputeError && (
+                <div className={styles.disputeError}>{disputeError}</div>
+              )}
+              <div className={styles.disputeActions}>
+                <Button variant="danger" size="sm" onClick={handleOpenDispute} loading={disputing}>
+                  Submit Dispute
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowDisputeForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
-    if (status === 'paid' && isSeller) {
+    if (status === 'disputed') {
       return (
-        <div className={[styles.orderBanner, styles.bannerPaid].join(' ')}>
-          <div className={styles.bannerTitle}>✅ Paid — please deliver</div>
+        <div className={[styles.orderBanner, styles.bannerDisputed].join(' ')}>
+          <div className={styles.bannerTitle}>⚠️ Dispute in Progress</div>
           <p className={styles.bannerSub}>
-            Stars are in escrow. Send the account credentials and wait for the buyer to confirm.
+            Our support team is reviewing this order. Funds are frozen until resolved.
+            Please do not share credentials while the dispute is active.
           </p>
         </div>
       );
@@ -180,6 +259,7 @@ export default function ChatWindow({ order, refresh }) {
           <div className={styles.lotCardStatus} data-status={order.status}>
             {order.status === 'pending' && '⏳ Pending'}
             {order.status === 'paid' && '🔒 In Escrow'}
+            {order.status === 'disputed' && '⚠️ Disputed'}
             {order.status === 'completed' && '✅ Done'}
             {order.status === 'cancelled' && '❌ Cancelled'}
           </div>
@@ -193,7 +273,12 @@ export default function ChatWindow({ order, refresh }) {
           </div>
         )}
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} currentUserId={currentUserId} />
+          <MessageBubble
+            key={msg.id}
+            message={msg}
+            currentUserId={currentUserId}
+            isOptimistic={!!msg._optimistic}
+          />
         ))}
         <div ref={bottomRef} />
       </div>

@@ -150,6 +150,9 @@ export function useDebounce(value, delay = 300) {
 
 // Chat messages
 export function useChat(orderId) {
+  const user = useUserStore((s) => s.user);
+  const currentUserId = user?.id;
+
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -168,7 +171,7 @@ export function useChat(orderId) {
     }
   }, [orderId]);
 
-  // Poll typing indicator every 2 s (lightweight — just a boolean)
+  // Poll typing indicator every 10s (lightweight — just a boolean)
   const fetchTyping = useCallback(async () => {
     if (!orderId) return;
     try {
@@ -181,8 +184,8 @@ export function useChat(orderId) {
 
   useEffect(() => {
     fetchMessages();
-    const msgTimer = setInterval(fetchMessages, 5000);
-    const typingTimer = setInterval(fetchTyping, 2000);
+    const msgTimer = setInterval(fetchMessages, 15000);
+    const typingTimer = setInterval(fetchTyping, 10000);
     return () => {
       clearInterval(msgTimer);
       clearInterval(typingTimer);
@@ -190,12 +193,28 @@ export function useChat(orderId) {
   }, [fetchMessages, fetchTyping]);
 
   const sendMessage = async (text) => {
+    // Optimistic update — show message immediately
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const optimisticMsg = {
+      id: tempId,
+      orderId,
+      senderId: String(currentUserId),
+      text,
+      type: 'text',
+      createdAt: new Date().toISOString(),
+      _optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     try {
       const res = await chatService.sendMessage(orderId, text);
       if (res?.message) {
-        setMessages((prev) => [...prev, res.message]);
+        // Replace the optimistic placeholder with the real server message
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? res.message : m)));
       }
     } catch (err) {
+      // Roll back optimistic message on error
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       throw err;
     }
   };
@@ -254,7 +273,7 @@ export function useOrder(orderId) {
 
   useEffect(() => {
     fetchOrder();
-    const timer = setInterval(fetchOrder, 15000);
+    const timer = setInterval(fetchOrder, 30000);
     return () => clearInterval(timer);
   }, [fetchOrder]);
 

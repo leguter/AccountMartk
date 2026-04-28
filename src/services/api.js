@@ -327,3 +327,15 @@ export const balanceService = {
     return api.post('/api/withdraw', { amount, mode });
   },
 };
+
+export const disputeService = {
+  /**
+   * Open a dispute on a paid order.
+   * Either buyer or seller can call this.
+   * @param {string} orderId
+   * @param {string} reason - Must be at least 10 characters
+   */
+  async openDispute(orderId, reason) {
+    return api.post(`/api/orders/${orderId}/dispute`, { reason });
+  },
+};
