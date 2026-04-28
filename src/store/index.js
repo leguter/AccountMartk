@@ -150,15 +150,9 @@ export const useUserStore = create(
           // All attempts failed — try persisted session as fallback
           console.error('All auth attempts failed. Last error:', lastError);
           const { accessToken, user } = readPersistedUserSlice();
-          
-          let displayError = lastError?.message || String(lastError);
-          if (displayError.includes('net::ERR_NAME_NOT_RESOLVED')) {
-            displayError = 'DNS Error: Backend URL could not be resolved. Please check BASE_URL in api.js.';
-          } else if (displayError.includes('timeout')) {
-            displayError = 'Connection Timeout: The server took too long to respond. Render free tier might be sleeping.';
-          }
 
           if (accessToken) {
+            // We have a valid saved session — use it silently, no error shown
             console.log('Falling back to persisted session');
             setApiAccessToken(accessToken);
             set({
@@ -167,9 +161,16 @@ export const useUserStore = create(
               initData,
               isAuthenticated: true,
               isLoading: false,
-              error: displayError // Keep error but allow app to continue
+              error: null, // ← CRITICAL: clear error so App.jsx shows the app, not the error screen
             });
           } else {
+            // Truly no session — format a user-friendly error message
+            let displayError = lastError?.message || String(lastError);
+            if (displayError.includes('net::ERR_NAME_NOT_RESOLVED')) {
+              displayError = 'DNS Error: Backend URL could not be resolved.';
+            } else if (displayError.includes('timeout')) {
+              displayError = 'Connection Timeout: The server is sleeping. Please retry in 30 seconds.';
+            }
             setApiAccessToken(null);
             set({
               user: null,
@@ -177,7 +178,7 @@ export const useUserStore = create(
               accessToken: null,
               isAuthenticated: false,
               isLoading: false,
-              error: displayError
+              error: displayError,
             });
           }
           return tg;

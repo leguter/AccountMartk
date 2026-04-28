@@ -225,3 +225,68 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Reviews list ─────────────────────────────────────────── */
+.reviewsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reviewCard {
+  background: var(--black-2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reviewer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reviewerName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.reviewRating {
+  display: flex;
+  gap: 2px;
+  color: var(--yellow);
+}
+
+.reviewComment {
+  font-size: 13px;
+  color: var(--gray-4);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.reviewDate {
+  font-size: 11px;
+  color: var(--gray-2);
+}
+
+.emptyReviews {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: var(--gray-3);
+  font-size: 14px;
+  text-align: center;
+}
+

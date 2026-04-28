@@ -363,3 +363,21 @@ export function useSellerProfile(idOrUsername) {
 
   return { user, loading, error };
 }
+
+export function useSellerReviews(sellerId) {
+  const [data, setData] = useState({ reviews: [], averageRating: null, count: 0, loading: true, error: null });
+
+  useEffect(() => {
+    if (!sellerId) return;
+    paymentService.getSellerReviews(sellerId)
+      .then(res => {
+        setData({ ...res, loading: false, error: null });
+      })
+      .catch(err => {
+        setData(d => ({ ...d, loading: false, error: err.message }));
+      });
+  }, [sellerId]);
+
+  return data;
+}
+

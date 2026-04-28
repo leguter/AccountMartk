@@ -21,6 +21,7 @@ export default function ProductDetail() {
   const currentUser = useUserStore((s) => s.user);
   const { impact, notification } = useHaptic();
   const { t } = useTranslation();
+  const [quantity, setQuantity] = useState(1);
 
   const isOwner = !!(product && currentUser && String(product.userId ?? product.seller?.id) === String(currentUser.id));
 
@@ -58,7 +59,7 @@ export default function ProductDetail() {
     impact('medium');
     setContacting(true);
     try {
-      const res = await paymentService.createOrder(product.id);
+      const res = await paymentService.createOrder(product.id, quantity);
       const orderId = res?.order?.id;
       if (orderId) {
         navigate(`/chat/${orderId}`);
@@ -208,6 +209,33 @@ export default function ProductDetail() {
         </div>
       )}
 
+      {/* Quantity Selection */}
+      {!isOwner && product.stockCount > 1 && (
+        <div className={styles.quantitySection}>
+          <label className={styles.quantityLabel}>{t('quantity')} / {t('accounts_available')}</label>
+          <div className={styles.quantitySelector}>
+            <button 
+              className={styles.qtyBtn} 
+              onClick={() => { impact('light'); setQuantity(q => Math.max(1, q - 1)); }}
+              disabled={quantity <= 1}
+            >
+              –
+            </button>
+            <span className={styles.qtyValue}>{quantity}</span>
+            <button 
+              className={styles.qtyBtn} 
+              onClick={() => { impact('light'); setQuantity(q => Math.min(product.stockCount, q + 1)); }}
+              disabled={quantity >= product.stockCount}
+            >
+              +
+            </button>
+            <div className={styles.totalPrice}>
+              Total: ⭐ {(product.price * quantity).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Why buy */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>{t('why_buy')}</h2>
@@ -251,10 +279,10 @@ export default function ProductDetail() {
           /* Buyer: price + contact */
           <>
             <div className={styles.ctaPrice}>
-              <StarsPrice amount={product.price} size="lg" />
+              <StarsPrice amount={product.price * quantity} size="lg" />
               {product.originalPrice && (
                 <div className={styles.ctaDiscount}>
-                  <StarsPrice amount={product.originalPrice} size="sm" strikethrough />
+                  <StarsPrice amount={product.originalPrice * quantity} size="sm" strikethrough />
                   <span className={styles.discountPill}>-{discount}%</span>
                 </div>
               )}

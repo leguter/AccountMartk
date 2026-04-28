@@ -351,3 +351,71 @@
   gap: 10px;
   width: 100%;
 }
+
+/* Quantity Selector */
+.quantitySection {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.quantityLabel {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.quantitySelector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--black-3);
+  border: 1px solid var(--black-5);
+  border-radius: var(--radius-lg);
+  padding: 8px 12px;
+  width: fit-content;
+}
+
+.qtyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--black-4);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.qtyBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.qtyBtn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.qtyValue {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+  min-width: 24px;
+  text-align: center;
+}
+
+.totalPrice {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--gray-3);
+  font-weight: 600;
+}
+

@@ -222,3 +222,48 @@
   color: var(--gray-3);
   font-size: 14px;
 }
+
+.commissionBox {
+  margin-top: 12px;
+  background: var(--black-2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commissionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.commissionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-3);
+}
+
+.commissionValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.commissionGreen {
+  color: var(--success);
+}
+
+.commissionGray {
+  color: var(--gray-2);
+}
+
+.fieldHint {
+  font-size: 11px;
+  color: var(--gray-2);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+

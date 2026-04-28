@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { IconButton, ErrorState, Skeleton, Avatar, StarsPrice } from '../components/ui';
-import { useSellerProfile } from '../hooks';
+import { useSellerProfile, useSellerReviews } from '../hooks';
 import styles from './UserProfilePage.module.css';
 
 const CATEGORY_ICONS = {
@@ -9,10 +9,11 @@ const CATEGORY_ICONS = {
 };
 
 export default function UserProfilePage() {
-  const { id } = useParams();           // could be userId or username
+  const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('lots');
   const { user, loading, error } = useSellerProfile(id);
+  const reviewsData = useSellerReviews(user?.id);
 
   const handleBack = () => navigate(-1);
 
@@ -62,16 +63,14 @@ export default function UserProfilePage() {
             <span className={styles.statLabel}>Active lots</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statValue}>{completedSales}</span>
-            <span className={styles.statLabel}>Sales</span>
+            <span className={styles.statValue}>
+              {reviewsData.averageRating ? `⭐ ${reviewsData.averageRating}` : '—'}
+            </span>
+            <span className={styles.statLabel}>Rating ({reviewsData.count})</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statValue}>
-              {completedSales > 100 ? '🏆' : completedSales > 20 ? '✅' : '🆕'}
-            </span>
-            <span className={styles.statLabel}>
-              {completedSales > 100 ? 'Top Seller' : completedSales > 20 ? 'Trusted' : 'New'}
-            </span>
+            <span className={styles.statValue}>{completedSales}</span>
+            <span className={styles.statLabel}>Sales</span>
           </div>
         </div>
 
@@ -83,18 +82,63 @@ export default function UserProfilePage() {
           >
             Lots ({lots.length})
           </button>
+          <button
+            className={[styles.tab, activeTab === 'reviews' ? styles.activeTab : ''].join(' ')}
+            onClick={() => setActiveTab('reviews')}
+          >
+            Reviews ({reviewsData.count})
+          </button>
         </div>
 
         {/* Tab content */}
         <div className={styles.tabContent}>
           {activeTab === 'lots' && <LotsList lots={lots} />}
+          {activeTab === 'reviews' && <ReviewsList reviews={reviewsData.reviews} loading={reviewsData.loading} />}
         </div>
       </div>
     </div>
   );
 }
 
-/** Mini lot card for seller profile — reuses existing CSS tokens, no extra import. */
+function ReviewsList({ reviews, loading }) {
+  if (loading) return <Skeleton width="100%" height={100} count={3} radius="12px" />;
+
+  if (!reviews || reviews.length === 0) {
+    return (
+      <div className={styles.emptyReviews}>
+        <span style={{ fontSize: 36 }}>⭐</span>
+        <p>No reviews yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.reviewsList}>
+      {reviews.map((r) => (
+        <div key={r.id} className={styles.reviewCard}>
+          <div className={styles.reviewHeader}>
+            <div className={styles.reviewer}>
+              <Avatar name={r.reviewer?.firstName || r.reviewer?.username} size={24} />
+              <span className={styles.reviewerName}>
+                {r.reviewer?.firstName || r.reviewer?.username}
+              </span>
+            </div>
+            <div className={styles.reviewRating}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} style={{ opacity: i < r.rating ? 1 : 0.2 }}>⭐</span>
+              ))}
+            </div>
+          </div>
+          {r.comment && <p className={styles.reviewComment}>{r.comment}</p>}
+          <div className={styles.reviewDate}>
+            {new Date(r.createdAt).toLocaleDateString()}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function LotsList({ lots }) {
   if (!lots || lots.length === 0) {
     return (

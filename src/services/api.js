@@ -214,8 +214,8 @@ export const productService = {
 
 // ─── ORDERS + PAYMENTS (backend: order → createInvoiceLink) ──────────────────
 export const paymentService = {
-  async createOrder(productId) {
-    return api.post('/api/orders', { lotId: String(productId) });
+  async createOrder(productId, quantity = 1) {
+    return api.post('/api/orders', { lotId: String(productId), quantity: Number(quantity) });
   },
 
   async createInvoice(orderId) {
@@ -262,6 +262,14 @@ export const paymentService = {
         else reject(new Error(`Payment failed: ${status}`));
       });
     });
+  },
+
+  async submitReview(orderId, reviewData) {
+    return api.post(`/api/orders/${orderId}/review`, reviewData);
+  },
+
+  async getSellerReviews(sellerId) {
+    return api.get(`/api/users/${sellerId}/reviews`);
   },
 };
 
