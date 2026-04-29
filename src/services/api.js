@@ -346,4 +346,7 @@ export const disputeService = {
   async openDispute(orderId, reason) {
     return api.post(`/api/orders/${orderId}/dispute`, { reason });
   },
+  async resolveDispute(orderId) {
+    return api.patch(`/api/orders/${orderId}/resolve`);
+  },
 };

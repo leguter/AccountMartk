@@ -21,6 +21,7 @@ export default function ChatWindow({ order, refresh }) {
 
   const [paying, setPaying] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [resolving, setResolving] = useState(false);
 
   // Dispute UI state
   const [showDisputeForm, setShowDisputeForm] = useState(false);
@@ -50,8 +51,9 @@ export default function ChatWindow({ order, refresh }) {
 
   if (!order) return null;
 
-  const isBuyer = String(order.buyerId) === String(currentUserId);
-  const isSeller = String(order.sellerId) === String(currentUserId);
+  const isBuyer = String(order.userId || order.buyerId) === String(currentUserId);
+  const isSeller = String(order.product?.sellerId || order.sellerId) === String(currentUserId);
+  const isSupport = user?.username === 'StarcSupport';
   const lot = order.lot;
 
   const handleSend = async (text) => {
@@ -123,6 +125,21 @@ export default function ChatWindow({ order, refresh }) {
       notification('error');
     } finally {
       setDisputing(false);
+    }
+  };
+
+  const handleResolve = async () => {
+    impact('heavy');
+    setResolving(true);
+    try {
+      await disputeService.resolveDispute(order.id);
+      notification('success');
+      refresh();
+    } catch (err) {
+      console.error('Resolve failed:', err);
+      notification('error');
+    } finally {
+      setResolving(false);
     }
   };
 
@@ -238,9 +255,17 @@ export default function ChatWindow({ order, refresh }) {
         <div className={[styles.orderBanner, styles.bannerDisputed].join(' ')}>
           <div className={styles.bannerTitle}>⚠️ Dispute in Progress</div>
           <p className={styles.bannerSub}>
-            Our support team is reviewing this order. Funds are frozen until resolved.
-            Please do not share credentials while the dispute is active.
+            {isSupport 
+              ? "You are participating as support. Review the issue and resolve when done."
+              : "Our support team is reviewing this order. Funds are frozen until resolved."}
           </p>
+          {isSupport && (
+            <div className={styles.bannerActions}>
+              <Button variant="success" size="sm" onClick={handleResolve} loading={resolving}>
+                ✅ Resolve Dispute
+              </Button>
+            </div>
+          )}
         </div>
       );
     }
