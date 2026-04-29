@@ -292,7 +292,8 @@ export default function ChatWindow({ order, refresh }) {
           <div className={styles.lotCardInfo}>
             <div className={styles.lotCardTitle}>{lot.title}</div>
             <div className={styles.lotCardPrice}>
-              <StarsPrice amount={lot.price} size="sm" />
+              {order.quantity > 1 && <span className={styles.qtySpan}>{order.quantity} x </span>}
+              <StarsPrice amount={order.amount} size="sm" />
             </div>
           </div>
           <div className={styles.lotCardStatus} data-status={order.status}>

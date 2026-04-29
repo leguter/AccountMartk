@@ -69,7 +69,10 @@ export default function Profile() {
       <div key={item.id} className={styles.historyItem} onClick={() => navigate(`/chat/${item.id}`)} style={{ cursor: 'pointer' }}>
         <div className={styles.historyIcon}>{icon}</div>
         <div className={styles.historyInfo}>
-          <div className={styles.historyTitle}>{lot?.title || 'Order #' + item.id}</div>
+          <div className={styles.historyTitle}>
+            {item.quantity > 1 && <span className={styles.qtyLabel}>{item.quantity} x </span>}
+            {lot?.title || 'Order #' + item.id}
+          </div>
           <div className={styles.historyDate}>{formatDate(item.createdAt)}</div>
         </div>
         <div className={styles.historyRight}>
